@@ -1,42 +1,42 @@
 module.exports = async (fastify, opts, done) => {
     fastify.addSchema({
-        $id: 'users',
-        type: 'array',
-        items:{ $ref: 'user' }
-    })
-
-    fastify.addSchema({
-        $id: 'user',
+        $id: 'login',
         type: 'object',
         properties: {
-            id: {type: 'number'},
             login: {type: 'string'},
-            role: {type: 'string'}
+            password: {type: 'string'}
+        }
+    })
+
+    fastify.route({
+        method: "POST",
+        url: '/',
+        schema: {
+            body:{
+                $ref: 'login'
+            },
+            response:{
+                200: {
+                    user: {$ref: 'login'}
+                }
+            }
+        },
+        handler:  (request, reply) => {
+            // reply.send( {users:[{id: 2, login: 'dder255t@gmail.com', role: 'ADMIN'}, {id: 3, login: 'dder255t@gmail.com', role: 'ADMIN'} ]})
+            console.log(22)
+            const {login, password} = request.body;
+            reply.send( {login, password} )
         }
     })
 
     fastify.route({
         method: "GET",
         url: '/',
-        schema: {
-            response:{
-                200: {
-                    users: {$ref: 'users'}
-                }
-            }
-        },
-        handler:  (request, reply) => {
-            reply.send( {users:[{id: 2, login: 'dder255t@gmail.com', role: 'ADMIN'}, {id: 3, login: 'dder255t@gmail.com', role: 'ADMIN'} ]})
-        }
-    })
-
-    fastify.route({
-        method: "GET",
-        url: '/hello',
         schema: {},
         handler:  (request, reply) => {
             reply.send( 'hello world')
         }
     })
-    // done()
+
+    done()
 }
