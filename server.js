@@ -13,5 +13,6 @@ Router(fastify)
 fastify.listen(Config.PORT, function (err){
     if(err) console.log(err)
     fastify.log.info(`server listening on ${Config.PORT}`)
+
 })
 
