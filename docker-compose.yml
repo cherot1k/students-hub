@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  db:
+    image: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+  backend:
+    image: cherot1k/students-hub
+    depends_on:
+      - db
+    ports:
+    - 8000:8000
