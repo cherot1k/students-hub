@@ -16,8 +16,12 @@ try{
   Types(fastify)
   Router(fastify).then(r => console.log(r))
 
-  fastify.get('*', {}, (request, reply) =>{
-    reply.send("Hello, dick")
+  fastify.route({
+    method: "GET",
+    url: "*",
+    handler: (request, reply) => {
+      reply.send({hello:'world'})
+    }
   })
 
   fastify.listen(process.env.PORT || 5000, function (err){
