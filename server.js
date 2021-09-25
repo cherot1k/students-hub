@@ -16,7 +16,7 @@ try{
   Types(fastify)
   Router(fastify).then(r => console.log(r))
 
-  fastify.listen(process.env.PORT, function (err){
+  fastify.listen(process.env.PORT || 5000, function (err){
     if(err) console.log(err)
     fastify.log.info(`server listening on ${process.env.PORT}`)
   })
