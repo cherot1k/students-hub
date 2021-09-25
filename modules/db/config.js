@@ -14,7 +14,8 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   ssl: true,
   dialectOptions:{
     ssl: true
-  }
+  },
+  rejectUnauthorized: false
 })
 
 module.exports = sequelize
