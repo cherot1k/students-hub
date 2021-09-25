@@ -13,9 +13,12 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: "postgres",
   ssl: true,
   dialectOptions:{
-    ssl: true
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    },
+
   },
-  rejectUnauthorized: false
 })
 
 module.exports = sequelize
