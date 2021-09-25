@@ -18,7 +18,7 @@ try{
 
   fastify.route({
     method: "GET",
-    url: "*",
+    url: "/",
     handler: (request, reply) => {
       reply.send({hello:'world'})
     }
