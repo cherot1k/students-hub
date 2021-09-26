@@ -23,7 +23,7 @@ try{
     }
   })
 
-  fastify.listen(process.env.PORT || 5000, function (err){
+  fastify.listen(process.env.PORT || 5000, '0.0.0.0', function (err){
     if(err) console.log(err)
     fastify.log.info(`server listening on ${process.env.PORT}`)
   })
