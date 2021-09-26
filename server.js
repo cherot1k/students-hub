@@ -9,7 +9,6 @@ const fastify = require('fastify')({
 })
 
 try{
-  console.log(process.env)
   DB.authenticate().then(() => console.log('database connected'))
   DataSchemas(fastify).then(r => console.log(r))
   CorsSettings(fastify)
