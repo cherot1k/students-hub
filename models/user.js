@@ -2,7 +2,7 @@ const Sequilize = require('sequelize')
 const {DB} = require('../modules/db')
 const Profile = require('./profile')
 
-const User =  DB.define('user',{
+const User =  DB.define('app-users',{
   id: {
     type: Sequilize.INTEGER,
     autoIncrement: true,
@@ -18,7 +18,7 @@ const User =  DB.define('user',{
     type: Sequilize.STRING,
     allowNull: false
   }
-}, {tableName: 'user', timestamps: false})
+}, {tableName: 'app-users', timestamps: false})
 
 User.hasOne(Profile)
 Profile.belongsTo(User)
