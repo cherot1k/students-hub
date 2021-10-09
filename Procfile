@@ -1,2 +1,2 @@
 web: node server.js
-release: prisma migrate dev --name init
+release: npx prisma db push --preview-feature
