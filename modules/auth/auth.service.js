@@ -29,7 +29,7 @@ const createUserWithProfile = async ({ticket, password, first_name, last_name, u
 }
 
 const loginUser = async ({ticket, password}) => {
-  const foundUser = await user.findOne({where: {ticket}})
+  const foundUser = await user.findUnique({where: {ticket}})
   if(!foundUser) throw new Error('no user')
   if(!await compare(password,  foundUser.password)) throw new Error('passwords are not equal')
   return createJWTToken({id: foundUser.id, ticket: foundUser.ticket})
