@@ -1,16 +1,29 @@
 const jwt = require('../jwt')
-const {user, profile} = require('../../models')
 const {hash, compare} = require('../crypto')
+
+const {PrismaClient} = require("@prisma/client")
+
+const {user, profile} = new PrismaClient()
 
 const createUserWithProfile = async ({ticket, password, first_name, last_name, university}) => {
 
   const hashedPassword = await hash(password)
-  const currentUser = await user.create({ticket, password: hashedPassword})
+
+  const currentProfile = await profile.create({
+    data:{
+      first_name, last_name, university, group: "2", email: "dder255t@gmail.com"
+    }
+  })
+
+  const currentUser = await user.create({
+    data:{
+      ticket,
+      password: hashedPassword,
+      profileId: currentProfile.id
+    }
+  })
   console.log(currentUser)
 
-  const userProfile = await profile.create({first_name, last_name, university, userId: currentUser.id })
-  console.log(userProfile)
-  console.log(currentUser)
 
   return createJWTToken({id: currentUser.id, ticket: currentUser.ticket})
 }

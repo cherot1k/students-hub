@@ -16,8 +16,10 @@ module.exports = async (fastify, opts, done) => {
       password: {type: 'string'},
       first_name: {type: 'string'},
       last_name: {type: 'string'},
-      university: {type: 'string'}
+      university: {type: 'string'},
+      group: {type: 'string'},
+      email: {type: 'string'}
     },
-    required: ['ticket', 'password', 'first_name', 'last_name', 'university']
+    required: ['ticket', 'password', 'first_name', 'last_name', 'university', 'group', 'email']
   })
 }

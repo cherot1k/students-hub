@@ -2,14 +2,12 @@ require('dotenv').config()
 const Types = require('./types/types')
 const Router = require('./lib/router')
 const CorsSettings = require('./config/cors')
-const {DB} = require('./modules/db')
 const DataSchemas = require('./lib/schemas')
 const fastify = require('fastify')({
   logger: true
 })
 
 try{
-  DB.authenticate().then(() => console.log('database connected'))
   DataSchemas(fastify).then(r => console.log(r))
   CorsSettings(fastify)
   Types(fastify)

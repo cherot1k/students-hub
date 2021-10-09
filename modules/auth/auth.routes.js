@@ -46,16 +46,6 @@ module.exports = async (fastify, opts, done) => {
         }
     })
 
-
-    fastify.route({
-        method: "GET",
-        url: '/',
-        schema: {},
-        handler:  (request, reply) => {
-            reply.send( 'hello world')
-        }
-    })
-
     fastify.route({
         method: 'POST',
         url: '/verify',
