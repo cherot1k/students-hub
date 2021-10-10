@@ -5,6 +5,9 @@ module.exports = async (fastify, opts, done) => {
         method: "POST",
         url: '/login',
         schema: {
+            description: "Login",
+            tags: ['Auth, User'],
+            summary: '',
             body:{
                 $ref: 'login'
             },
@@ -28,6 +31,9 @@ module.exports = async (fastify, opts, done) => {
         method: 'POST',
         url: '/registration',
         schema:{
+            description: "Register",
+            tags: ['Auth, User'],
+            summary: '',
             body:{
                 $ref: 'registration'
             },
@@ -50,6 +56,9 @@ module.exports = async (fastify, opts, done) => {
         method: 'POST',
         url: '/verify',
         schema:{
+            description: "Verify",
+            tags: ['Auth, User'],
+            summary: '',
             body:{
                 type: 'object',
                 properties: {
@@ -64,6 +73,7 @@ module.exports = async (fastify, opts, done) => {
             },
             response:{
                 200:{
+                    description: "Response",
                     type: 'object',
                     properties: {
                         token: {
