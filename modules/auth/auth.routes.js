@@ -46,9 +46,8 @@ module.exports = async (fastify, opts, done) => {
             }
         },handler: async (request, reply) => {
             const {ticket, password, first_name, last_name, university, group, email} = request.body
-            const user = await createUserWithProfile({ticket, password, first_name, last_name, university})
-            console.log(user)
-            reply.send(JSON.stringify({ ticket, password, first_name, last_name, university}))
+            const token = await createUserWithProfile({ticket, password, first_name, last_name, university})
+            reply.send(token)
         }
     })
 
