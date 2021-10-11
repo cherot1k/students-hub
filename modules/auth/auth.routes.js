@@ -1,4 +1,4 @@
-const {createUserWithProfile, loginUser} = require('./auth.service')
+const {createUserWithProfile, loginUser, verify} = require('./auth.service')
 
 module.exports = async (fastify, opts, done) => {
     fastify.route({
@@ -31,7 +31,7 @@ module.exports = async (fastify, opts, done) => {
         method: 'POST',
         url: '/registration',
         schema:{
-            description: "Register",
+            description: "Registerate",
             tags: ['Auth, User'],
             summary: '',
             body:{
@@ -45,9 +45,13 @@ module.exports = async (fastify, opts, done) => {
                 }
             }
         },handler: async (request, reply) => {
-            const {ticket, password, first_name, last_name, university, group, email} = request.body
-            const token = await createUserWithProfile({ticket, password, first_name, last_name, university})
-            reply.send({token})
+            try {
+                const {ticket, password, first_name, last_name, university, group, email} = request.body
+                const token = await createUserWithProfile({ticket, password, first_name, last_name, university})
+                reply.send({token})
+            }catch (e){
+              reply.send(e)
+            }
         }
     })
 
@@ -61,32 +65,32 @@ module.exports = async (fastify, opts, done) => {
             body:{
                 type: 'object',
                 properties: {
-                    ticket: {
-                        type: 'string',
-                    },
-                    password: {
+                    token:{
                         type: 'string'
                     }
                 },
-                required: ['ticket', 'password']
+                required: ['token']
             },
             response:{
                 200:{
                     description: "Response",
                     type: 'object',
                     properties: {
-                        token: {
-                            type: 'string'
+                        verified: {
+                            type: 'boolean'
                         }
                     }
                 }
             }
         },
         handler: async (request, reply) => {
-            const {ticket, password} = request.body
-
-            console.log(hashedPassword.toString('hex'))
-            reply.send({ticket, password:hashedPassword})
+            try{
+                const {token} = request.body
+                const isValid = await verify(token)
+                reply.send({verified: isValid})
+            }catch (e){
+                reply.send(e)
+            }
         }
     })
 }

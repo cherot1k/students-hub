@@ -35,12 +35,17 @@ const loginUser = async ({ticket, password}) => {
   return createJWTToken({id: foundUser.id, ticket: foundUser.ticket})
 }
 
+const verify = async (token) => {
+  return jwt.verify(token)
+}
+
 const createJWTToken = (data) => {
   return jwt.sign(data)
 }
 
 module.exports = {
   createUserWithProfile,
-  loginUser
+  loginUser,
+  verify
 }
 
