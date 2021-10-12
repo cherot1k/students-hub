@@ -13,14 +13,17 @@ module.exports = async (fastify, opts, done) => {
             },
             response:{
                 200: {
-                    user: {$ref: 'login'}
+                    token: {
+                        type: 'string'
+                    }
                 }
             }
         },
         handler:  async (request, reply) => {
           try{
             const {ticket, password} = request.body;
-            reply.send(await loginUser({ticket, password}))
+            const token = await loginUser({ticket, password})
+            reply.send({token})
           }catch (e){
                reply.send(e)
           }
