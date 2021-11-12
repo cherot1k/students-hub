@@ -29,3 +29,12 @@ model User{
   profileId Int
   Profile Profile @relation(fields: [profileId], references: [id])
 }
+
+model Post{
+  id    Int    @id @default(autoincrement())
+  authorId Int
+  title   String
+  body    String
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+  User User @relation(fields: [authorId], references: [id])
+}

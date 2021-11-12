@@ -3,11 +3,17 @@ const Types = require('./types/types')
 const Router = require('./lib/router')
 const CorsSettings = require('./config/cors')
 const DataSchemas = require('./lib/schemas')
+const {fastifyAwilixPlugin} = require("fastify-awilix");
+const {loadModule} = require("./lib/loadmodules")
 const fastify = require('fastify')({
   logger: true
 })
+const {MODULE_PATH} = require('./utils/constants')
+
 
 try{
+  fastify.register(fastifyAwilixPlugin, {disposeOnClose: true, disposeOnResponse: true})
+
   DataSchemas(fastify).then(r => console.log(r))
   CorsSettings(fastify)
   Types(fastify)
@@ -34,6 +40,10 @@ try{
       exposeRoute: true
     })
   })
+
+
+  loadModule({ callback: (val) => val(), matchPattern: /\.service.js/, filepath: MODULE_PATH, importName: "registerService"})
+  
 
   fastify.route({
     method: "GET",
