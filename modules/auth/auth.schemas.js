@@ -1,4 +1,4 @@
-module.exports = async (fastify, opts, done) => {
+module.exports =  (fastify, opts, done) => {
   fastify.addSchema({
     $id: 'login',
     type: 'object',

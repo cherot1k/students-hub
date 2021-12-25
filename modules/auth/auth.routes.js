@@ -1,6 +1,6 @@
-const {createUserWithProfile, loginUser, verify} = require('./auth.service')
+const DI = require('../../lib/DI')
 
-module.exports = async (fastify, opts, done) => {
+const routes =  (fastify, opts, done) => {
     fastify.route({
         method: "POST",
         url: '/login',
@@ -21,8 +21,9 @@ module.exports = async (fastify, opts, done) => {
         },
         handler:  async (request, reply) => {
           try{
+            const userService = DI.injectModule('userService')
             const {ticket, password} = request.body;
-            const token = await loginUser({ticket, password})
+            const token = await userService.loginUser({ticket, password})
             reply.send({token})
           }catch (e){
                reply.send(e)
@@ -49,8 +50,9 @@ module.exports = async (fastify, opts, done) => {
             }
         },handler: async (request, reply) => {
             try {
+                const userService = DI.injectModule('userService')
                 const {ticket, password, first_name, last_name, university, group, email} = request.body
-                const token = await createUserWithProfile({ticket, password, first_name, last_name, university})
+                const token = await userService.createUserWithProfile({ticket, password, first_name, last_name, university})
                 reply.send({token})
             }catch (e){
               reply.send(e)
@@ -88,12 +90,22 @@ module.exports = async (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try{
+                const userService = DI.injectModule('userService')
                 const {token} = request.body
-                const isValid = await verify(token)
+                const isValid = await userService.verify(token)
                 reply.send({verified: isValid})
             }catch (e){
                 reply.send(e)
             }
         }
     })
+
+    done();
+}
+
+module.exports = {
+    data: {
+        routes,
+        prefix: '/auth'
+    }
 }

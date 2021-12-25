@@ -10,31 +10,32 @@ generator client {
   provider = "prisma-client-js"
 }
 
-model Profile{
-  id        Int      @id @default(autoincrement())
-  university     String   @db.VarChar(255)
-  group     String   @db.VarChar(255)
-  first_name     String   @db.VarChar(255)
-  last_name     String   @db.VarChar(255)
-  email     String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  User User?
+model Profile {
+  id         Int      @id @default(autoincrement())
+  university String   @db.VarChar(255)
+  group      String   @db.VarChar(255)
+  first_name String   @db.VarChar(255)
+  last_name  String   @db.VarChar(255)
+  email      String   @db.VarChar(255)
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  User       User?
 }
 
-model User{
+model User {
   id        Int      @id @default(autoincrement())
-  ticket     String   @db.VarChar(255) @unique
-  password   String @db.VarChar(255)
+  ticket    String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  profileId Int
-  Profile Profile @relation(fields: [profileId], references: [id])
+  profileId Int      @unique
+  Profile   Profile  @relation(fields: [profileId], references: [id])
+  Post      Post[]
 }
 
-model Post{
-  id    Int    @id @default(autoincrement())
-  authorId Int
-  title   String
-  body    String
+model Post {
+  id        Int      @id @default(autoincrement())
+  authorId  Int
+  title     String
+  body      String
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  User User @relation(fields: [authorId], references: [id])
+  User      User     @relation(fields: [authorId], references: [id])
 }

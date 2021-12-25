@@ -1,7 +1,7 @@
 const cors = require('fastify-cors')
-module.exports = (fastify, opts, done) => {
+module.exports = (fastify) => {
   fastify.register(cors, {
-    origin: ['localhost:3000'],
+    origin: ['*'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'PUT']
   })
