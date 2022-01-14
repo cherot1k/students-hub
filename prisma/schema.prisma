@@ -18,7 +18,7 @@ model Profile {
   last_name  String   @db.VarChar(255)
   email      String   @db.VarChar(255)
   createdAt  DateTime @default(now()) @db.Timestamp(6)
-  User       User?
+  user       User?
 }
 
 model User {
@@ -27,7 +27,7 @@ model User {
   password  String   @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamp(6)
   profileId Int      @unique
-  Profile   Profile  @relation(fields: [profileId], references: [id])
+  profile   Profile  @relation(fields: [profileId], references: [id])
   Post      Post[]
 }
 
@@ -35,7 +35,32 @@ model Post {
   id        Int      @id @default(autoincrement())
   authorId  Int
   title     String
-  body      String
+  chunks    PostChunk[]
   createdAt DateTime @default(now()) @db.Timestamp(6)
-  User      User     @relation(fields: [authorId], references: [id])
+  user      User     @relation(fields: [authorId], references: [id])
+  tags      PostsOnTags[]
+}
+
+model PostChunk {
+  id        Int     @id @default(autoincrement())
+  image     String
+  text      String
+  postId    Int
+  post      Post    @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now()) @db.Timestamp(6)
+}
+
+model Tag {
+    id      Int @id @default(autoincrement())
+    value   String
+    posts   PostsOnTags[]
+}
+
+model PostsOnTags {
+    tagId   Int
+    postId  Int
+    post    Post @relation(fields: [postId], references: [id])
+    tag     Tag @relation(fields: [tagId], references: [id])
+
+    @@id([postId, tagId])
 }

@@ -7,20 +7,18 @@ const {user, profile} = new PrismaClient()
 
 
 class AuthService{
-   async createUserWithProfile({ticket, password, first_name, last_name, university}){
+   async createUserWithProfile({ticket, password, first_name, last_name, university, group, email}){
      const hashedPassword = await hash(password)
-
-     const currentProfile = await profile.create({
-       data:{
-         first_name, last_name, university, group: "2", email: "dder255t@gmail.com"
-       }
-     })
 
      const currentUser = await user.create({
        data:{
          ticket,
          password: hashedPassword,
-         profileId: currentProfile.id
+         profile: {
+             create: {
+                 first_name, last_name, university, group, email
+             }
+         }
        }
      })
 

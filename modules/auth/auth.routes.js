@@ -21,7 +21,7 @@ const routes =  (fastify, opts, done) => {
         },
         handler:  async (request, reply) => {
           try{
-            const userService = DI.injectModule('userService')
+            const userService = DI.injectModule('authService')
             const {ticket, password} = request.body;
             const token = await userService.loginUser({ticket, password})
             reply.send({token})
@@ -50,9 +50,9 @@ const routes =  (fastify, opts, done) => {
             }
         },handler: async (request, reply) => {
             try {
-                const userService = DI.injectModule('userService')
+                const userService = DI.injectModule('authService')
                 const {ticket, password, first_name, last_name, university, group, email} = request.body
-                const token = await userService.createUserWithProfile({ticket, password, first_name, last_name, university})
+                const token = await userService.createUserWithProfile({ticket, password, first_name, last_name, university, group, email})
                 reply.send({token})
             }catch (e){
               reply.send(e)
@@ -90,7 +90,7 @@ const routes =  (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try{
-                const userService = DI.injectModule('userService')
+                const userService = DI.injectModule('authService')
                 const {token} = request.body
                 const isValid = await userService.verify(token)
                 reply.send({verified: isValid})
