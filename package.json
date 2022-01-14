@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "node server.js",
-    "prestart": "prisma migrate dev --name init"
+    "prestart": "prisma migrate dev --name init && npx prisma db seed"
   },
   "keywords": [],
   "author": "",
