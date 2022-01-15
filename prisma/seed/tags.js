@@ -19,5 +19,4 @@ module.exports = async () => {
             update: {value: currentTag.value},
         })
     }
-    await $disconnect()
 }
