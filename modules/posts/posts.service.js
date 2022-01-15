@@ -1,6 +1,6 @@
 const {PrismaClient} = require("@prisma/client")
 
-const {post, chunk, postChunk, $transaction} = new PrismaClient()
+const {post, tag, postChunk, $transaction} = new PrismaClient()
 
 class PostsService{
     async getPost({filterObject}){
@@ -105,6 +105,10 @@ class PostsService{
             console.log(e)
             throw new Error(e)
         }
+    }
+
+    async getTags(){
+        return await tag.findMany()
     }
 }
 

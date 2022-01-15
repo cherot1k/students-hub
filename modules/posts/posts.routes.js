@@ -3,6 +3,7 @@ const {verify} = require("../jwt");
 const BEARER_STRING = 'Bearer '
 
 const routes = (fastify, opts, done) => {
+    const postService = DI.injectModule('postService')
     fastify.route({
         method: "GET",
         url: '/',
@@ -64,7 +65,6 @@ const routes = (fastify, opts, done) => {
             done()
         },
         handler: async (request, reply) => {
-            const postService = DI.injectModule('postService')
             const answer = await postService.getPost({ filterObject: request.data})
             reply.send({data: answer})
         }
@@ -221,6 +221,14 @@ const routes = (fastify, opts, done) => {
             const {id} = request.query
             await postService.deletePost({id})
             reply.end()
+        }
+    })
+
+    fastify.route({
+        method: "GET",
+        url: '/tags',
+        handler: async (request, reply) => {
+            reply.send(await postService.getTags())
         }
     })
     done()
