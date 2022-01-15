@@ -26,6 +26,6 @@
     "jest": "^27.0.6"
   },
   "prisma" : {
-    "seed": "cd ./prisma/seed && node seed.js"
+    "seed": "cd ../prisma/seed && node seed.js"
   }
 }
