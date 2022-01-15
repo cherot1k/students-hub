@@ -9,11 +9,8 @@ const fastify = require('fastify')({
 const fastify_swagger = require('fastify-swagger')
 const {MODULE_PATH} = require('./utils/constants')
 const DI = require('./lib/DI')
-const polyfills = require('./polyfills')
 try{
   (async () => {
-    polyfills()
-
     fastify.register(fastify_swagger, {
       routePrefix: '/doc',
       swagger: {
