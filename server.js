@@ -41,7 +41,7 @@ try{
     Types(fastify)
     loadModule({ callback: ({service, name}) => DI.registerModule(name, service), matchPattern: /\.service.js/, filepath: MODULE_PATH, importName: "module"})
     loadModule({callback:  ({routes, prefix}) => fastify.register(routes, {prefix}), matchPattern: /\.routes.js/, filepath: MODULE_PATH, importName: "data"})
-    fastify.get('/', {},(request, reply) => reply.send('hello, world') )
+    fastify.get('/', {},(request, reply) => reply.send('hellos, world') )
 
 
     fastify.listen(process.env.PORT || 2000, '0.0.0.0', function (err){
