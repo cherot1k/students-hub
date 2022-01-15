@@ -13,7 +13,7 @@ const polyfills = require('./polyfills')
 try{
   (async () => {
     polyfills()
-    console.log([-1, 0, 2].at(-1))
+
     fastify.register(fastify_swagger, {
       routePrefix: '/doc',
       swagger: {
