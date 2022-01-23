@@ -19,7 +19,7 @@ try{
           description: 'Wtf r u doing',
           version: '2.2.8'
         },
-        host: 'localhost:2000',
+        // host: 'localhost:2000',
         schemes: ['http'],
         consumes: ['application/json'],
         produces: ['application/json'],

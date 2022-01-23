@@ -12,14 +12,11 @@ module.exports =  (fastify, opts, done) => {
     $id: 'registration',
     type: 'object',
     properties: {
-      ticket: {type: 'string'},
+      ticketPhoto: {type: 'string'},
       password: {type: 'string'},
-      first_name: {type: 'string'},
-      last_name: {type: 'string'},
-      university: {type: 'string'},
+      email: {type: 'string'},
       group: {type: 'string'},
-      email: {type: 'string'}
     },
-    required: ['ticket', 'password', 'first_name', 'last_name', 'university', 'group', 'email']
+    required: ['ticketPhoto', 'password', 'email', 'group']
   })
 }

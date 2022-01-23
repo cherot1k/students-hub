@@ -11,49 +11,50 @@ generator client {
 }
 
 model Profile {
-  id         Int      @id @default(autoincrement())
-  university String   @db.VarChar(255)
-  group      String   @db.VarChar(255)
-  first_name String   @db.VarChar(255)
-  last_name  String   @db.VarChar(255)
-  email      String   @db.VarChar(255)
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
-  user       User?
+  id            Int      @id @default(autoincrement())
+  group         Group    @relation(fields: [groupId], references: [id])
+  groupId       Int
+  first_name    String   @db.VarChar(255)
+  last_name     String   @db.VarChar(255)
+  email         String   @db.VarChar(255)
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  imageUrl      String   @default("")
+  user          User?
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  ticket    String   @unique @db.VarChar(255)
-  password  String   @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  profileId Int      @unique
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  Post      Post[]
+  id            Int      @id @default(autoincrement())
+  ticket        String   @unique @db.VarChar(255)
+  password      String   @db.VarChar(255)
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  profileId     Int      @unique
+  profile       Profile  @relation(fields: [profileId], references: [id])
+  Post          Post[]
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  authorId  Int
-  title     String
-  chunks    PostChunk[]
-  createdAt DateTime @default(now()) @db.Timestamp(6)
-  user      User     @relation(fields: [authorId], references: [id])
-  tags      PostsOnTags[]
+  id            Int         @id @default(autoincrement())
+  authorId      Int
+  title         String
+  chunks        PostChunk[]
+  createdAt     DateTime    @default(now()) @db.Timestamp(6)
+  user          User        @relation(fields: [authorId], references: [id])
+  tags          PostsOnTags[]
 }
 
 model PostChunk {
-  id        Int     @id @default(autoincrement())
-  image     String
-  text      String
-  postId    Int
-  post      Post    @relation(fields: [postId], references: [id])
-  createdAt DateTime @default(now()) @db.Timestamp(6)
+  id            Int         @id @default(autoincrement())
+  image         String
+  text          String
+  postId        Int
+  post          Post        @relation(fields: [postId], references: [id])
+  createdAt     DateTime    @default(now()) @db.Timestamp(6)
 }
 
 model Tag {
-    id      Int @id @default(autoincrement())
-    value   String
-    posts   PostsOnTags[]
+    id          Int         @id @default(autoincrement())
+    value       String
+    posts       PostsOnTags[]
 }
 
 model PostsOnTags {
@@ -63,4 +64,29 @@ model PostsOnTags {
     tag     Tag @relation(fields: [tagId], references: [id])
 
     @@id([postId, tagId])
+}
+
+model Group{
+    id          Int     @id @default(autoincrement())
+    name        String  @unique
+    members     Profile[]
+    faculty     Faculty @relation(fields: [facultyId], references: [id])
+    facultyId   Int
+}
+
+model Faculty{
+    id              Int     @id @default(autoincrement())
+    groups          Group[]
+    name            String  @unique
+    imageUrl        String  @default("https://google.com")
+    university      University @relation(fields: [universityId], references: [id])
+    universityId    Int
+}
+
+
+model University {
+    id          Int     @id @default(autoincrement())
+    name        String  @unique
+    faculties   Faculty[]
+    imageUrl    String  @default("https://google.com")
 }

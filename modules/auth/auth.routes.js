@@ -51,8 +51,8 @@ const routes =  (fastify, opts, done) => {
         },handler: async (request, reply) => {
             try {
                 const userService = DI.injectModule('authService')
-                const {ticket, password, first_name, last_name, university, group, email} = request.body
-                const token = await userService.createUserWithProfile({ticket, password, first_name, last_name, university, group, email})
+                const {password, ticketPhoto, email, group} = request.body
+                const token = await userService.createUserWithProfile({ticketPhoto, password, email, group})
                 reply.send({token})
             }catch (e){
               reply.send(e)
