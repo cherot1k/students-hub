@@ -138,11 +138,11 @@ const routes = (fastify, opts, done) => {
             body: {
                 $ref: 'updatePost'
             },
-            // response: {
-            //     200: {
-            //      $ref: 'post'
-            //     }
-            // }
+            response: {
+                200: {
+                 $ref: 'post'
+                }
+            }
         },
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
@@ -167,11 +167,14 @@ const routes = (fastify, opts, done) => {
             body: {
                 $ref: 'updateChunks'
             },
-            // response: {
-            //     200: {
-            //         $ref: 'post'
-            //     }
-            // }
+            response: {
+                200: {
+                    type: 'array',
+                    items: {
+                        $ref: 'chunk'
+                    }
+                }
+            }
         },
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
@@ -197,7 +200,7 @@ const routes = (fastify, opts, done) => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'number'
+                        type: 'integer'
                     }
                 },
                 required: ['id']
@@ -234,7 +237,7 @@ const routes = (fastify, opts, done) => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'number'
+                        type: 'integer'
                     }
                 },
                 required: ['id']
@@ -263,6 +266,18 @@ const routes = (fastify, opts, done) => {
     fastify.route({
         method: "GET",
         url: '/tags',
+        schema: {
+          200: {
+            type: 'array',
+              items: {
+                type: 'object',
+                  properties: {
+                    id: 'number',
+                    value: 'string'
+                  }
+              }
+          }
+        },
         handler: async (request, reply) => {
             reply.send(await postService.getTags())
         }

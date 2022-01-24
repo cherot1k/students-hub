@@ -1,34 +1,43 @@
 module.exports = (fastify, opts, done) => {
     fastify.addSchema({
+        $id: 'chunk',
+        type: 'object',
+        properties: {
+            id: {type: 'integer'},
+            image: {type: 'string'},
+            text: {type: 'string'},
+            createdAt: {type: 'date-time'},
+        }
+    })
+
+    fastify.addSchema({
         $id: 'post',
         type: 'object',
         properties: {
-            header: {type: 'string'},
-            body: {
+            id: {type: 'integer'},
+            title: {type: 'string'},
+            chunks: {
                 type: 'array',
                 items: {
-                    type: 'object',
-                    properties: {
-                        image: {type: 'string'},
-                        text: {type: 'string'}
-                    },
-                    required: ['image', 'text']
+                    $ref: 'chunk'
                 }
             },
-            authorId: {type: 'number'},
+            createdAt: {type: 'date-time'},
             tags: {
                 type: 'array',
-                items: {type: 'integer'}
+                items: {
+                    type: 'string'
+                }
             }
         }
     })
 
     fastify.addSchema({
         $id: 'posts',
-        // type: 'array',
-        // items: {
-        //     $ref: 'post'
-        // }
+        type: 'array',
+        items: {
+            $ref: 'post'
+        }
     })
 
     fastify.addSchema({
