@@ -11,6 +11,9 @@ const {MODULE_PATH} = require('./utils/constants')
 const DI = require('./lib/DI')
 try{
   (async () => {
+    fastify.register(require('fastify-multipart'), {
+      // addToBody: true
+    })
     fastify.register(fastify_swagger, {
       routePrefix: '/doc',
       swagger: {

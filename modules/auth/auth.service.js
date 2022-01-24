@@ -3,7 +3,7 @@ const {hash, compare} = require('../crypto')
 const DI = require('../../lib/DI')
 const {PrismaClient} = require("@prisma/client")
 
-const {user, profile} = new PrismaClient()
+const {user} = new PrismaClient()
 
 class AuthService{
    async createUserWithProfile({ticketPhoto, password, email, group}){
@@ -13,7 +13,7 @@ class AuthService{
      const user_data = await imageRecognitionService.recognizeTicketData(ticketPhoto)
      const {ticket, full_name, faculty, university, userImage} = user_data
      const [first_name, _, last_name] = full_name.trim().split(' ')
-     const userImageUrl = imageStorage.storeImageAndReturnUrl(userImage)
+     const userImageUrl = await imageStorage.storeImageAndReturnUrl(userImage)
      const currentUser = await user.create({
        data:{
          ticket,

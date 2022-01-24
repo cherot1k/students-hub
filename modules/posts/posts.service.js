@@ -15,11 +15,16 @@ class PostsService{
     }
 
     async createPost({title, body, userId, tags}){
+        console.log('userId', userId)
         try{
             return await post.create({
                 data: {
                     title,
-                    authorId: userId,
+                    user:{
+                        connect: {
+                            id: userId
+                        }
+                    },
                     chunks: {
                         create: [...body]
                     },
@@ -44,10 +49,11 @@ class PostsService{
 
     }
 
-    async updatePost({ id, title }){
+    async updatePost({ id, title, userId }){
         return await post.update({
             where: {
-                id
+                id,
+                authorId: userId
             },
             data: {
                 title
@@ -55,7 +61,7 @@ class PostsService{
         })
     }
 
-    async updateChunks(chunkArray){
+    async updateChunks(chunkArray, userId){
         try {
             for(let updatedChunk of chunkArray){
                 const dataObject = {}
@@ -63,7 +69,10 @@ class PostsService{
                 if(updatedChunk.text) dataObject.text = updatedChunk.text
                 await postChunk.update({
                     where:{
-                        id: updatedChunk.id
+                        id: updatedChunk.id,
+                        post: {
+                            authorId: userId
+                        }
                     },
                     data: dataObject
                 })

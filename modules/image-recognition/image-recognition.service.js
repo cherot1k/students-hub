@@ -1,6 +1,5 @@
 const { createWorker } = require('tesseract.js');
 const sharp = require('sharp')
-const fs = require("fs");
 const worker = createWorker();
 
 const LANGUAGES = {
@@ -59,16 +58,6 @@ const BLOCKS = [
             height: 180,
         }
     },
-    // {
-    //     name: 'group',
-    //     language: LANGUAGES.UA,
-    //     rectangle: {
-    //         left: 21,
-    //         top: 1149,
-    //         width: 700,
-    //         height: 100,
-    //     }
-    // },
     {
         name: 'university',
         language: LANGUAGES.UA,
@@ -84,8 +73,8 @@ const BLOCKS = [
 const parseImageData = (imageData) => {
     let data = Object.create(null)
     for(let chunk of imageData){
-        Object.values(chunk).forEach(el => el.replace(`\n`, ' '))
-        Object.assign(data,chunk)
+        Object.values(chunk).forEach(el => typeof el === 'string'? el.replace(`\n`, ' '): el)
+        Object.assign(data, chunk)
     }
     return data
 }
@@ -103,7 +92,7 @@ class ImageRecognitionService{
                 values.push({[value.name]: text.replaceAll('\n', ' ')});
             }
             const userImage =  await sharp(imageData).extract({width: 377 , height: 467, top: 194, left: 389}).toBuffer()
-            values.push(userImage)
+            values.push({userImage})
             await worker.terminate();
             return parseImageData(values)
     }

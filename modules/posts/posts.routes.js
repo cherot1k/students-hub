@@ -40,9 +40,18 @@ const routes = (fastify, opts, done) => {
             }
         },
         preHandler : (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if(!userId) reply.code(401).send("Auth error")
+
             const {take, skip, sort, order, filter} = request.query
             const queryBuilder = DI.injectModule('query-builder')
             const includeObject = {
+                where: {
+                    user: {
+                        id: userId
+                    }
+                },
                 include: {
                     chunks: {
                         select: {
@@ -108,6 +117,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
+            if(!userId) reply.code(401).send("Auth error")
             request.body = {...request.body, userId}
             done()
         },
@@ -134,11 +144,17 @@ const routes = (fastify, opts, done) => {
             //     }
             // }
         },
-
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if(!userId) reply.code(401).send("Auth error")
+            request.body = {...request.body, userId}
+            done()
+        },
         handler: async (request, reply) => {
             const postService = DI.injectModule('postService')
-            const {title, id} = request.body
-            reply.send(await postService.updatePost({id, title}))
+            const {title, id, userId} = request.body
+            reply.send(await postService.updatePost({id, title, userId}))
         }
     })
 
@@ -157,11 +173,17 @@ const routes = (fastify, opts, done) => {
             //     }
             // }
         },
-
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if(!userId) reply.code(401).send("Auth error")
+            request.body = {...request.body, userId}
+            done()
+        },
         handler: async (request, reply) => {
             const postService = DI.injectModule('postService')
-            const {chunks}  = request.body
-            reply.send(await postService.updateChunks(chunks))
+            const {chunks, userId}  = request.body
+            reply.send(await postService.updateChunks(chunks, userId))
         }
     })
 
@@ -185,6 +207,13 @@ const routes = (fastify, opts, done) => {
 
                 }
             }
+        },
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if(!userId) reply.code(401).send("Auth error")
+            request.body = {...request.body, userId}
+            done()
         },
         handler: async (request, reply) => {
             const {id} = request.query
@@ -215,6 +244,13 @@ const routes = (fastify, opts, done) => {
 
                 }
             }
+        },
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if(!userId) reply.code(401).send("Auth error")
+            request.body = {...request.body, userId}
+            done()
         },
         handler: async (request, reply) => {
             const postService = DI.injectModule('postService')

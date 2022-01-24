@@ -38,9 +38,9 @@ const routes =  (fastify, opts, done) => {
             description: "Registerate",
             tags: ['Auth, User'],
             summary: '',
-            body:{
-                $ref: 'registration'
-            },
+            // body:{
+                // $ref: 'registration'
+            // },
             response: {
                 200: {
                     token: {
@@ -50,8 +50,12 @@ const routes =  (fastify, opts, done) => {
             }
         },handler: async (request, reply) => {
             try {
+                const data = await request.file()
+                const {password, group, email} = Object.values(data.fields).reduce((prev, curr) => {
+                    return {...prev, [curr.fieldname]: curr.value}
+                },Object.create(null))
+                const ticketPhoto = await data.toBuffer()
                 const userService = DI.injectModule('authService')
-                const {password, ticketPhoto, email, group} = request.body
                 const token = await userService.createUserWithProfile({ticketPhoto, password, email, group})
                 reply.send({token})
             }catch (e){

@@ -1,12 +1,10 @@
 const clodinary = require('cloudinary').v2
 clodinary.config({
-    cloud_name: 'dts7nyiog',
-    api_key : '284391289715389',
-    api_secret: 'XGSdsaQaJI0SYzTluTs2B9oNV_I'
+    cloud_name: process.env.CLOUD_NAME,
+    api_key : process.env.API_KEY,
+    api_secret: process.env.API_SECRET
 })
-const USER_PHOTO_DIR = "/user"
 const {Readable} = require('node:stream')
-const fs = require('node:fs')
 require('dotenv').config()
 
 class ImageStorageService{
@@ -26,7 +24,11 @@ class ImageStorageService{
                 }
             }
         );
-        return await imgDataStream.pipe(cld_upload_stream)
+        return new Promise((resolve, reject) => {
+            let data = "";
+            imgDataStream.on('data', (chunk) => console.log('chunk', chunk))
+            imgDataStream.pipe(cld_upload_stream).on('end', () => resolve(data));
+        })
     }
 
     async getImageByUrl(){
