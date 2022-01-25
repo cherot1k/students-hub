@@ -24,8 +24,8 @@ model Profile {
 
 model User {
   id            Int      @id @default(autoincrement())
-  ticket        String   @unique @db.VarChar(255)
-  password      String   @db.VarChar(255)
+  ticket        String   @unique
+  password      String
   createdAt     DateTime @default(now()) @db.Timestamp(6)
   profile       Profile  @relation(fields: [profileId], references: [id])
   profileId     Int
