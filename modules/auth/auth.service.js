@@ -19,42 +19,48 @@ class AuthService{
          ticket,
          password: hashedPassword,
          profile: {
+           connectOrCreate:{
+             where: {
+               email
+             },
              create: {
-                 first_name,
-                 last_name,
-                 group: {
-                     connectOrCreate:{
+               first_name,
+               last_name,
+               group: {
+                 connectOrCreate:{
+                   where: {
+                     name: group.trim()
+                   },
+                   create: {
+                     name: group.trim(),
+                     faculty: {
+                       connectOrCreate: {
                          where: {
-                             name: group.trim()
+                           name: faculty.trim()
                          },
                          create: {
-                             name: group.trim(),
-                             faculty: {
-                                 connectOrCreate: {
-                                     where: {
-                                         name: faculty.trim()
-                                     },
-                                     create: {
-                                         name: faculty.trim(),
-                                         university: {
-                                             connectOrCreate: {
-                                                 where: {
-                                                     name: university.trim()
-                                                 },
-                                                 create: {
-                                                     name: university.trim()
-                                                 }
-                                             }
-                                         }
-                                     }
-                                 }
+                           name: faculty.trim(),
+                           university: {
+                             connectOrCreate: {
+                               where: {
+                                 name: university.trim()
+                               },
+                               create: {
+                                 name: university.trim()
+                               }
                              }
+                           }
                          }
+                       }
                      }
-                 },
-                 email,
-                 imageUrl: userImageUrl
+                   }
+                 }
+               },
+               email,
+               imageUrl: userImageUrl
              }
+           }
+
          }
        }
      })
