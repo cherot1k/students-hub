@@ -27,8 +27,8 @@ model User {
   ticket        String   @unique @db.VarChar(255)
   password      String   @db.VarChar(255)
   createdAt     DateTime @default(now()) @db.Timestamp(6)
-  profileId     Int      @unique
   profile       Profile  @relation(fields: [profileId], references: [id])
+  profileId     Int
   Post          Post[]
 }
 
