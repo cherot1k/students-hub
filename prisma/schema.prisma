@@ -19,7 +19,7 @@ model Profile {
   email         String
   createdAt     DateTime @default(now()) @db.Timestamp(6)
   imageUrl      String
-  user          User
+  user          User?
 }
 
 model User {
