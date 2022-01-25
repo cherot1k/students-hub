@@ -19,35 +19,30 @@ class AuthService{
          ticket,
          password: hashedPassword,
          profile: {
-           connectOrCreate:{
-             where: {
-               email
-             },
-             create: {
-               first_name,
-               last_name,
-               group: {
-                 connectOrCreate:{
-                   where: {
-                     name: group.trim()
-                   },
-                   create: {
-                     name: group.trim(),
-                     faculty: {
-                       connectOrCreate: {
-                         where: {
-                           name: faculty.trim()
-                         },
-                         create: {
-                           name: faculty.trim(),
-                           university: {
-                             connectOrCreate: {
-                               where: {
-                                 name: university.trim()
-                               },
-                               create: {
-                                 name: university.trim()
-                               }
+           create: {
+             first_name,
+             last_name,
+             group: {
+               connectOrCreate:{
+                 where: {
+                   name: group.trim()
+                 },
+                 create: {
+                   name: group.trim(),
+                   faculty: {
+                     connectOrCreate: {
+                       where: {
+                         name: faculty.trim()
+                       },
+                       create: {
+                         name: faculty.trim(),
+                         university: {
+                           connectOrCreate: {
+                             where: {
+                               name: university.trim()
+                             },
+                             create: {
+                               name: university.trim()
                              }
                            }
                          }
@@ -55,12 +50,11 @@ class AuthService{
                      }
                    }
                  }
-               },
-               email,
-               imageUrl: userImageUrl
-             }
+               }
+             },
+             email,
+             imageUrl: userImageUrl
            }
-
          }
        }
      })
