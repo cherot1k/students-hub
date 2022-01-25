@@ -6,7 +6,7 @@ module.exports = (fastify, opts, done) => {
             id: {type: 'integer'},
             image: {type: 'string'},
             text: {type: 'string'},
-            createdAt: {type: 'date-time'},
+            createdAt: {type: 'string'},
         }
     })
 
@@ -22,7 +22,7 @@ module.exports = (fastify, opts, done) => {
                     $ref: 'chunk'
                 }
             },
-            createdAt: {type: 'date-time'},
+            createdAt: {type: 'string'},
             tags: {
                 type: 'array',
                 items: {
