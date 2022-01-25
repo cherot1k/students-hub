@@ -14,11 +14,11 @@ model Profile {
   id            Int      @id @default(autoincrement())
   group         Group    @relation(fields: [groupId], references: [id])
   groupId       Int
-  first_name    String   @db.VarChar(255)
-  last_name     String   @db.VarChar(255)
-  email         String   @db.VarChar(255)
+  first_name    String
+  last_name     String
+  email         String
   createdAt     DateTime @default(now()) @db.Timestamp(6)
-  imageUrl      String   @default("")
+  imageUrl      String
   user          User?
 }
 
