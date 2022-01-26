@@ -10,6 +10,7 @@ const fastify_swagger = require('fastify-swagger')
 const {MODULE_PATH} = require('./utils/constants')
 const DI = require('./lib/DI')
 try{
+  fastify.server.keepAliveTimeout = 90000;
   (async () => {
     fastify.register(require('fastify-multipart'), {
       // addToBody: true
