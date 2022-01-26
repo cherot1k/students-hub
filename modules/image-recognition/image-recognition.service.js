@@ -1,6 +1,5 @@
 const { createWorker } = require('tesseract.js');
 const sharp = require('sharp')
-const worker = createWorker();
 
 const LANGUAGES = {
     UA: "ukr",
@@ -82,6 +81,7 @@ const parseImageData = (imageData) => {
 class ImageRecognitionService{
 
     async recognizeTicketData(imageData){
+            const worker = createWorker();
             await worker.load();
             await worker.loadLanguage('eng');
             await worker.loadLanguage('ukr');
