@@ -102,10 +102,22 @@ module.exports = (fastify, opts, done) => {
     })
 
     fastify.addSchema({
+        $id: 'getPost',
+        querystring: {
+            type: 'object',
+            properties: {
+                id: { type: '"integer'}
+            },
+            required: ['id']
+        }
+    })
+
+    fastify.addSchema({
         $id: 'delPost',
         type: 'object',
         properties: {
             id: {type: 'number'}
         }
     })
+
 }

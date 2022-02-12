@@ -24,6 +24,7 @@ const routes =  (fastify, opts, done) => {
             const userService = DI.injectModule('authService')
             const {ticket, password} = request.body;
             const token = await userService.loginUser({ticket, password})
+            if(!token) reply.code(401).send()
             reply.send({token})
           }catch (e){
                reply.send(e)
