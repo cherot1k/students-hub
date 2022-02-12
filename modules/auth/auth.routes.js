@@ -26,7 +26,7 @@ const routes =  (fastify, opts, done) => {
             const token = await userService.loginUser({ticket, password})
             if(!token) reply.code(401).send()
             // reply.send({token})
-            reply.send({successful: true, message: "Successful", data: {token}})
+            reply.send({successful: true, message: "Successful", data: JSON.stringify( {token})})
           }catch (e){
                reply.send(e)
           }
