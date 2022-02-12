@@ -19,4 +19,5 @@ module.exports =  (fastify, opts, done) => {
     },
     required: ['ticketPhoto', 'password', 'email', 'group']
   })
+
 }
