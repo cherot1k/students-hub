@@ -111,6 +111,13 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken)?.id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            request.body = {...request.body, userId}
+            done()
+        },
         handler:  async (request, reply) => {
             try{
                 const {id} = request.body

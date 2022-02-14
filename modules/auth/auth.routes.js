@@ -1,5 +1,6 @@
 const DI = require('../../lib/DI')
 const {createResponse, createError} = require("../../lib/http");
+const BEARER_STRING = 'Bearer '
 
 const routes =  (fastify, opts, done) => {
     fastify.route({
