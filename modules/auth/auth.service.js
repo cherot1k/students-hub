@@ -67,6 +67,10 @@ class AuthService{
     if(!await compare(password,  foundUser.password)) throw new Error('passwords are not equal')
     return createJWTToken({id: foundUser.id, ticket: foundUser.ticket})
   }
+
+  verify(token) {
+     return jwt.verify(token)
+  }
 }
 
 const createJWTToken = (data) => {
