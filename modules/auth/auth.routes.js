@@ -75,15 +75,6 @@ const routes =  (fastify, opts, done) => {
             description: "Verify",
             tags: ['Auth, User'],
             summary: '',
-            body:{
-                type: 'object',
-                properties: {
-                    token:{
-                        type: 'string'
-                    }
-                },
-                required: ['token']
-            },
             response:{
                 200:{
                     description: "Response",
