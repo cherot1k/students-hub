@@ -97,9 +97,9 @@ const routes =  (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try{
+                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
                 const userService = DI.injectModule('authService')
-                const {token} = request.body
-                const isValid = await userService.verify(token)
+                const isValid = await userService.verify(userToken)
                 reply.send(createResponse({verified: isValid}))
             }catch (e){
                 reply.send(createError(e))
