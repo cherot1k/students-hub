@@ -68,11 +68,14 @@ class EventService{
 
     }
 
-    async deleteEvent({id}){
+    async deleteEvent({id, userId}){
         try{
-            return await event.delete({
+            return await event.deleteMany({
                 where: {
-                    id
+                    id,
+                    organizer: {
+                        id: userId
+                    }
                 }
             })
         }catch(e){

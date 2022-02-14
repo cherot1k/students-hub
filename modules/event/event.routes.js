@@ -1,5 +1,6 @@
 const DI = require("../../lib/DI");
 const {verify} = require("../jwt");
+const {createResponse, createError} = require("../../lib/http");
 const BEARER_STRING = 'Bearer ';
 
 const routes = (fastify, opts, done) => {
@@ -25,7 +26,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
@@ -33,9 +34,9 @@ const routes = (fastify, opts, done) => {
             try{
                 const {name, date, userId, membersId, status, title, address} = request.body;
                 const event = await eventService.createEvent({name, date, organizerId: userId, membersId, status, title, address})
-                reply.send({event})
+                reply.send(createResponse({event}))
             }catch (e){
-                reply.send(e)
+                reply.send(createError(e))
             }
         }
     })
@@ -67,8 +68,8 @@ const routes = (fastify, opts, done) => {
         },
         preHandler : (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            const userId = verify(userToken)?.id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
 
             const {take, skip, sort, order, filter} = request.query
             const queryBuilder = DI.injectModule('query-builder')
@@ -88,7 +89,7 @@ const routes = (fastify, opts, done) => {
         handler:  async (request, reply) => {
             try{
                 const data = await eventService.getEvents({filterObject: request.data})
-                reply.send(JSON.stringify(data))
+                reply.send(createResponse( data))
             }catch (e){
                 reply.send(e)
             }
@@ -114,9 +115,9 @@ const routes = (fastify, opts, done) => {
             try{
                 const {id} = request.body
                 const token = await eventService.getEvent(id)
-                reply.send({token})
+                reply.send(createResponse({token}))
             }catch (e){
-                reply.send(e)
+                reply.send(createError(e))
             }
         }
     })
@@ -138,8 +139,8 @@ const routes = (fastify, opts, done) => {
         },
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            const userId = verify(userToken)?.id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
@@ -147,13 +148,13 @@ const routes = (fastify, opts, done) => {
             const data = request.body
             const userId = data.userId
             delete data.userId
-            reply.send(await eventService.updateEvent(data, userId))
+            reply.send(createResponse( await eventService.updateEvent(data, userId)))
         }
     })
 
     fastify.route({
         method: "DELETE",
-        url: '/post',
+        url: '/event',
         schema: {
             description: "Delete post",
             tags: ["Events"],
@@ -174,18 +175,17 @@ const routes = (fastify, opts, done) => {
         },
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            const userId = verify(userToken)?.id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
         handler: async (request, reply) => {
-            const {id} = request.query
-            await eventService.deleteEvent({id})
-            reply.end()
+            const {id, userId} = request.query
+            await eventService.deleteEvent({id, userId})
+            reply.send(createResponse({}))
         }
     })
-
     done()
 }
 

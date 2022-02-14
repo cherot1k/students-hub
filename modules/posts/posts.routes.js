@@ -1,5 +1,6 @@
 const DI = require('../../lib/DI')
 const {verify} = require("../jwt");
+const {createResponse, createError} = require("../../lib/http");
 const BEARER_STRING = 'Bearer '
 
 const routes = (fastify, opts, done) => {
@@ -42,7 +43,7 @@ const routes = (fastify, opts, done) => {
         preHandler : (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
 
             const {take, skip, sort, order, filter} = request.query
             const queryBuilder = DI.injectModule('query-builder')
@@ -75,7 +76,7 @@ const routes = (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             const answer = await postService.getPost({ filterObject: request.data})
-            reply.send({data: answer})
+            reply.send(createResponse({data: answer}))
         }
     })
 
@@ -117,7 +118,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
@@ -125,7 +126,7 @@ const routes = (fastify, opts, done) => {
             const postService = DI.injectModule('postService')
             const {body, title, userId, tags} = request.body
             const createdPost = await postService.createPost({title, body, userId, tags})
-            reply.send({createdPost})
+            reply.send(createResponse( {createdPost}))
         }
     })
 
@@ -147,14 +148,14 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
         handler: async (request, reply) => {
             const postService = DI.injectModule('postService')
             const {title, id, userId} = request.body
-            reply.send(await postService.updatePost({id, title, userId}))
+            reply.send(createResponse( await postService.updatePost({id, title, userId})))
         }
     })
 
@@ -179,14 +180,14 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
         handler: async (request, reply) => {
             const postService = DI.injectModule('postService')
             const {chunks, userId}  = request.body
-            reply.send(await postService.updateChunks(chunks, userId))
+            reply.send(createResponse( await postService.updateChunks(chunks, userId)))
         }
     })
 
@@ -214,7 +215,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
@@ -223,7 +224,7 @@ const routes = (fastify, opts, done) => {
             const postService = DI.injectModule('postService')
 
             await postService.deleteChunk({id})
-            reply.end()
+            reply.send(createResponse({}))
         }
     })
 
@@ -251,7 +252,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send("Auth error")
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
             request.body = {...request.body, userId}
             done()
         },
@@ -259,7 +260,7 @@ const routes = (fastify, opts, done) => {
             const postService = DI.injectModule('postService')
             const {id} = request.query
             await postService.deletePost({id})
-            reply.end()
+            reply.send(createResponse({}))
         }
     })
 
@@ -279,7 +280,7 @@ const routes = (fastify, opts, done) => {
           }
         },
         handler: async (request, reply) => {
-            reply.send(await postService.getTags())
+            reply.send(createResponse( await postService.getTags()))
         }
     })
     done()

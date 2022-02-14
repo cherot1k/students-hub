@@ -1,4 +1,5 @@
 const DI = require('../../lib/DI')
+const {createResponse, createError} = require("../../lib/http");
 
 const routes =  (fastify, opts, done) => {
     fastify.route({
@@ -25,8 +26,7 @@ const routes =  (fastify, opts, done) => {
             const {ticket, password} = request.body;
             const token = await userService.loginUser({ticket, password})
             if(!token) reply.code(401).send()
-            // reply.send({token})
-            reply.send(JSON.stringify({successful: true, message: "Successful", data:  {token}}))
+            reply.send(createResponse({token}))
           }catch (e){
                reply.send(e)
           }
@@ -60,9 +60,9 @@ const routes =  (fastify, opts, done) => {
                 const ticketPhoto = await data.toBuffer()
                 const userService = DI.injectModule('authService')
                 const token = await userService.createUserWithProfile({ticketPhoto, password, email, group})
-                reply.send({token})
+                reply.send(createResponse( {token}))
             }catch (e){
-              reply.send(e)
+              reply.send(createError(e))
             }
         }
     })
@@ -100,9 +100,9 @@ const routes =  (fastify, opts, done) => {
                 const userService = DI.injectModule('authService')
                 const {token} = request.body
                 const isValid = await userService.verify(token)
-                reply.send({verified: isValid})
+                reply.send(createResponse({verified: isValid}))
             }catch (e){
-                reply.send(e)
+                reply.send(createError(e))
             }
         }
     })
