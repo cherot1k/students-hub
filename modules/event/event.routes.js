@@ -120,9 +120,9 @@ const routes = (fastify, opts, done) => {
         },
         handler:  async (request, reply) => {
             try{
-                const {id} = request.body
-                const token = await eventService.getEvent(id)
-                reply.send(createResponse({token}))
+                const {userId} = request.body
+                const id = request.params.id
+                reply.send(createResponse(await eventService.getEvent({userId, id})))
             }catch (e){
                 reply.send(createError(e))
             }

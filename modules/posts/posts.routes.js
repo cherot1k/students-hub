@@ -75,7 +75,7 @@ const routes = (fastify, opts, done) => {
             done()
         },
         handler: async (request, reply) => {
-            const answer = await postService.getPost({ filterObject: request.data})
+            const answer = await postService.getPosts({ filterObject: request.data})
             reply.send(createResponse({data: answer}))
         }
     })
@@ -95,7 +95,17 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        handler: (request, reply) => {
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            request.body = {...request.body, userId}
+            done()
+        },
+        handler: async (request, reply) => {
+            const id = request.params.id
+            const {userId} = request.body
+            reply.send(createResponse(await postService.getPost({id, userId})))
 
         }
     })

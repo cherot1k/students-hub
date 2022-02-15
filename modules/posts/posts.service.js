@@ -3,7 +3,7 @@ const {PrismaClient} = require("@prisma/client")
 const {post, tag, postChunk, $transaction} = new PrismaClient()
 
 class PostsService{
-    async getPost({filterObject}){
+    async getPosts({filterObject}){
         try{
             let data =  await post.findMany(filterObject)
             //TODO tech debt
@@ -14,8 +14,23 @@ class PostsService{
         }
     }
 
+    async getPost({id, userId}){
+        try{
+            const data = await post.findMany({
+                where: {
+                    id,
+                    organizer: {
+                        id: userId
+                    }
+                }
+            })
+            return data[0]
+        }catch (e) {
+            console.log('error', e)
+        }
+    }
+
     async createPost({title, body, userId, tags}){
-        console.log('userId', userId)
         try{
             return await post.create({
                 data: {

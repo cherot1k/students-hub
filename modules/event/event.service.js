@@ -11,10 +11,17 @@ class EventService{
         }
     }
 
-    async getEvent(id){
+    async getEvent({id, userId}){
         try{
-            let data = await event.findUnique({id})
-            return data
+            let data = await event.findMany({
+                where:{
+                    id: Number(id),
+                    organizer:{
+                        id: Number( userId)
+                    }
+                }
+            })
+            return data?.[0]
         }catch(e){
             console.log('error', e)
         }
