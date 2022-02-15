@@ -193,6 +193,59 @@ const routes = (fastify, opts, done) => {
             reply.send(createResponse({}))
         }
     })
+
+    fastify.route({
+        method: "PATCH",
+        url: '/connect',
+        schema: {
+            description: "Patch event",
+            tags: ["Events"],
+            response:{
+                200: {
+
+                }
+            }
+        },
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken)?.id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            request.body = {...request.body, userId}
+            done()
+        },
+        handler: async (request, reply) => {
+            const {userId, eventId} = request.body
+            await eventService.connectUsersToEvent({ userId, eventId })
+            reply.send(createResponse({}))
+        }
+    })
+
+    fastify.route({
+        method: "PATCH",
+        url: '/disconnect',
+        schema: {
+            description: "Patch event",
+            tags: ["Events"],
+            response:{
+                200: {
+
+                }
+            }
+        },
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken)?.id
+            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            request.body = {...request.body, userId}
+            done()
+        },
+        handler: async (request, reply) => {
+            const {userId, eventId} = request.body
+            await eventService.disconnectUserFromEvent({ userId, eventId })
+            reply.send(createResponse({}))
+        }
+    })
+
     done()
 }
 

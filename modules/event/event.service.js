@@ -90,23 +90,27 @@ class EventService{
         }
     }
 
-    async connectUsersToEvent({eventId, userIds}){
+    async connectUsersToEvent({eventId, userId}){
         return await event.update({
             where: {id: eventId},
             data: {
                 members:{
-                    connect: userIds.map(el => ({id: el}))
+                    connect: {
+                        id: userId
+                    }
                 }
             }
         })
     }
 
-    async disconnectUserFromEvent({eventId, userIds}){
+    async disconnectUserFromEvent({eventId, userId}){
         return await event.update({
             where: {id: eventId},
             data: {
                 members: {
-                    disconnect: userIds.map(el => ({id: el}))
+                    disconnect: {
+                        id: userId
+                    }
                 }
             }
         })
