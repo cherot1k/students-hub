@@ -29,7 +29,7 @@ class EventService{
 
     async createEvent({name, date, organizerId, membersId, status, title, address}){
         try{
-            await event.create({
+            return await event.create({
                 data: {
                     name,
                     date: new Date(date),
@@ -95,9 +95,14 @@ class EventService{
             where: {id: eventId},
             data: {
                 members:{
-                    connect: {
-                        id: userId
-                    }
+                    create:[
+                     {
+                        user: {
+                            connect:{
+                                id: userId
+                            }
+                        },
+                    }]
                 }
             }
         })
@@ -108,8 +113,8 @@ class EventService{
             where: {id: eventId},
             data: {
                 members: {
-                    disconnect: {
-                        id: userId
+                    deleteMany:{
+                        userId
                     }
                 }
             }
