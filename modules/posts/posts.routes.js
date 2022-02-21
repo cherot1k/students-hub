@@ -48,11 +48,7 @@ const routes = (fastify, opts, done) => {
             const {take, skip, sort, order, filter} = request.query
             const queryBuilder = DI.injectModule('query-builder')
             const includeObject = {
-                where: {
-                    user: {
-                        id: userId
-                    }
-                },
+                where: {},
                 include: {
                     chunks: {
                         select: {
