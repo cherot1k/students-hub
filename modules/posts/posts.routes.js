@@ -2,6 +2,11 @@ const DI = require('../../lib/DI')
 const {verify} = require("../jwt");
 const {createResponse, createError} = require("../../lib/http");
 const BEARER_STRING = 'Bearer '
+const SOCIAL_TAG = {
+    me: 'me',
+    university: 'university',
+    all: 'all'
+}
 
 const routes = (fastify, opts, done) => {
     const postService = DI.injectModule('postService')
@@ -23,7 +28,8 @@ const routes = (fastify, opts, done) => {
                         items: {
                             type: 'integer'
                         }
-                    }
+                    },
+                    socialTag: {type: 'string', enum: Object.values(SOCIAL_TAG)}
                     // filter: {
                     //     type: 'object',
                     //     properties: {
@@ -40,12 +46,13 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler : (request, reply, done) => {
+        preHandler : async (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
             if(!userId) reply.code(401).send(createError("Unauthorized"))
 
-            const {take, skip, sort, order, filter} = request.query
+            const {take, skip, sort, order, filter, socialTag} = request.query
+
             const queryBuilder = DI.injectModule('query-builder')
             const includeObject = {
                 where: {},
@@ -64,6 +71,32 @@ const routes = (fastify, opts, done) => {
                         }
                     }
                 },
+            }
+
+            if(socialTag === SOCIAL_TAG.me){
+                includeObject.where = {...includeObject.where, user: {id: userId}}
+            }
+            if(socialTag === SOCIAL_TAG.university){
+                const userService = DI.injectModule('userService')
+
+                const user = await userService.getUserById(userId)
+
+                const universityName = user?.profile?.group?.faculty?.university?.name;
+
+                includeObject.where = {
+                    ...includeObject.where,
+                    user: {
+                        profile: {
+                            group: {
+                                faculty: {
+                                    university: {
+                                        name: universityName
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             const query = queryBuilder.buildQuery({sort, order, skip: Number(skip), take: Number(take), includeObject, AND: filter? JSON.parse(filter) : {}})
