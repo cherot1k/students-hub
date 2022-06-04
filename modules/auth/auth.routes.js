@@ -57,12 +57,12 @@ const routes =  (fastify, opts, done) => {
                 const {password, group, email} = Object.values(data.fields).reduce((prev, curr) => {
                     return {...prev, [curr.fieldname]: curr.value}
                 },Object.create(null))
-                console.log(data.fields)
                 const ticketPhoto = await data.toBuffer()
                 const userService = DI.injectModule('authService')
                 const token = await userService.createUserWithProfile({ticketPhoto, password, email, group})
                 reply.send(createResponse( {token}))
             }catch (e){
+                console.log('e', e)
               reply.send(createError(e))
             }
         }

@@ -11,110 +11,144 @@ generator client {
 }
 
 model Profile {
-  id            Int      @id @default(autoincrement())
-  group         Group    @relation(fields: [groupId], references: [id])
-  groupId       Int
-  first_name    String
-  last_name     String
-  email         String
-  createdAt     DateTime @default(now()) @db.Timestamp(6)
-  imageUrl      String
-  user          User?
+  id         Int      @id @default(autoincrement())
+  group      Group    @relation(fields: [groupId], references: [id])
+  groupId    Int
+  first_name String
+  last_name  String
+  email      String
+  createdAt  DateTime @default(now()) @db.Timestamp(6)
+  imageUrl   String
+  user       User?
 }
 
 model User {
-  id                Int      @id @default(autoincrement())
-  ticket            String   @unique
+  id                Int             @id @default(autoincrement())
+  ticket            String          @unique
   password          String
-  createdAt         DateTime @default(now()) @db.Timestamp(6)
-  profile           Profile  @relation(fields: [profileId], references: [id])
-  profileId         Int
-  Post              Post[]
+  createdAt         DateTime        @default(now()) @db.Timestamp(6)
+  profile           Profile         @relation(fields: [profileId], references: [id])
+  profileId         Int             @unique
+  posts             Post[]
   participateEvents UserOnEvent[]
   organizedEvents   Event[]
+  likes             LikeOnPosts[]
+  comments          Comment[]
+  likedComments     LikeOnComments[]
 }
 
 model Post {
-  id            Int         @id @default(autoincrement())
-  authorId      Int
-  title         String
-  chunks        PostChunk[]
-  createdAt     DateTime    @default(now()) @db.Timestamp(6)
-  user          User        @relation(fields: [authorId], references: [id])
-  tags          PostsOnTags[]
+  id        Int             @id @default(autoincrement())
+  authorId  Int
+  title     String
+  chunks    PostChunk[]
+  createdAt DateTime        @default(now()) @db.Timestamp(6)
+  user      User            @relation(fields: [authorId], references: [id])
+  tags      PostsOnTags[]
+  likes     LikeOnPosts[]
+  comments  Comment[]
+}
+
+model LikeOnComments{
+  userId    Int
+  commentId Int
+  comment   Comment? @relation(fields: [commentId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@id([userId, commentId])
+}
+
+model LikeOnPosts{
+  userId    Int
+  postId    Int
+  user      User?    @relation(fields: [userId], references: [id])
+  post      Post?    @relation(fields: [postId], references: [id])
+
+  @@id([userId, postId])
 }
 
 model PostChunk {
-  id            Int         @id @default(autoincrement())
-  image         String
-  text          String
-  postId        Int
-  post          Post        @relation(fields: [postId], references: [id])
-  createdAt     DateTime    @default(now()) @db.Timestamp(6)
+  id        Int      @id @default(autoincrement())
+  image     String
+  text      String
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id])
+  createdAt DateTime @default(now()) @db.Timestamp(6)
 }
 
 model Tag {
-    id          Int         @id @default(autoincrement())
-    value       String
-    posts       PostsOnTags[]
-    createdAt     DateTime    @default(now()) @db.Timestamp(6)
+  id        Int           @id @default(autoincrement())
+  value     String
+  posts     PostsOnTags[]
+  createdAt DateTime      @default(now()) @db.Timestamp(6)
+}
+
+model Comment {
+  id            Int             @id @default(autoincrement())
+  text          String
+  userId        Int
+  createdAt     DateTime        @default(now()) @db.Timestamp(6)
+  user          User            @relation(fields: [userId], references: [id])
+  postId        Int
+  post          Post            @relation(fields: [postId], references: [id])
+  users         LikeOnComments[]
 }
 
 model PostsOnTags {
-    tagId   Int
-    postId  Int
-    post    Post @relation(fields: [postId], references: [id])
-    tag     Tag @relation(fields: [tagId], references: [id])
+  tagId  Int
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
+  tag    Tag  @relation(fields: [tagId], references: [id])
 
-    @@id([postId, tagId])
+  @@id([postId, tagId])
 }
 
-model Group{
-    id          Int     @id @default(autoincrement())
-    name        String  @unique
-    members     Profile[]
-    faculty     Faculty @relation(fields: [facultyId], references: [id])
-    facultyId   Int
-    createdAt     DateTime    @default(now()) @db.Timestamp(6)
+
+model Group {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  members   Profile[]
+  faculty   Faculty   @relation(fields: [facultyId], references: [id])
+  facultyId Int
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
 }
 
-model Faculty{
-    id              Int     @id @default(autoincrement())
-    groups          Group[]
-    name            String  @unique
-    imageUrl        String  @default("https://google.com")
-    university      University @relation(fields: [universityId], references: [id])
-    universityId    Int
-    createdAt     DateTime    @default(now()) @db.Timestamp(6)
+model Faculty {
+  id           Int        @id @default(autoincrement())
+  groups       Group[]
+  name         String     @unique
+  imageUrl     String     @default("https://google.com")
+  university   University @relation(fields: [universityId], references: [id])
+  universityId Int
+  createdAt    DateTime   @default(now()) @db.Timestamp(6)
 }
-
 
 model University {
-    id          Int     @id @default(autoincrement())
-    name        String  @unique
-    faculties   Faculty[]
-    imageUrl    String  @default("https://google.com")
-    createdAt     DateTime    @default(now()) @db.Timestamp(6)
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  faculties Faculty[]
+  imageUrl  String    @default("https://google.com")
+  createdAt DateTime  @default(now()) @db.Timestamp(6)
 }
 
-model UserOnEvent{
-    userId   Int
-    eventId  Int
-    event    Event? @relation(fields: [eventId], references: [id])
-    user     User? @relation(fields: [userId], references: [id])
+model UserOnEvent {
+  userId  Int
+  eventId Int
+  event   Event? @relation(fields: [eventId], references: [id])
+  user    User?  @relation(fields: [userId], references: [id])
 
-    @@id([userId, eventId])
+  @@id([userId, eventId])
 }
 
-model Event{
-    id          Int     @id @default(autoincrement())
-    name        String
-    date        DateTime    @db.Timestamp(6)
-    createdAt   DateTime    @default(now()) @db.Timestamp(6)
-    organizer   User        @relation(fields: [organizerId], references: [id])
-    organizerId Int
-    members     UserOnEvent[]
-    status      String
-    title       String
-    address     String
+model Event {
+  id          Int           @id @default(autoincrement())
+  name        String
+  date        DateTime      @db.Timestamp(6)
+  createdAt   DateTime      @default(now()) @db.Timestamp(6)
+  organizer   User          @relation(fields: [organizerId], references: [id])
+  organizerId Int
+  members     UserOnEvent[]
+  status      String
+  title       String
+  address     String
 }

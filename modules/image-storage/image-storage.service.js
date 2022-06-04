@@ -10,24 +10,23 @@ require('dotenv').config()
 class ImageStorageService{
 
     async storeImageAndReturnUrl(imageData, uuid){
-        let url
-        const imgDataStream = Readable.from(imageData)
-        const cld_upload_stream = await clodinary.uploader.upload_stream(
-            {
-                folder: "users",
-            },
-            (err, res) => {
-                if(res){
-                    url = res.url
-                }else {
-                    console.log(err)
-                }
-            }
-        );
+
         return new Promise((resolve, reject) => {
-            let data = "";
-            imgDataStream.on('data', (chunk) => console.log('chunk', chunk))
-            imgDataStream.pipe(cld_upload_stream).on('end', () => resolve(data));
+            const imgDataStream = Readable.from(imageData)
+            const stream = clodinary.uploader.upload_stream(
+                {
+                    folder: "users",
+                },
+                (err, res) => {
+                    if(res){
+                        resolve( res.url)
+                    }else {
+                        console.log(err)
+                    }
+                }
+            )
+
+            imgDataStream.pipe(stream).on('end', () => {});
         })
     }
 

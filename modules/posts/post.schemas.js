@@ -17,10 +17,16 @@ module.exports = (fastify, opts, done) => {
             id: {type: 'integer'},
             title: {type: 'string'},
             chunks: {
-                type: 'array',
-                items: {
-                    $ref: 'chunk'
-                }
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer'
+                    },
+                    text: {
+                        type: 'string'
+                    }
+                },
+                required: ['id']
             },
             createdAt: {type: 'string'},
             tags: {
@@ -49,35 +55,21 @@ module.exports = (fastify, opts, done) => {
             },
             title: {
                 type: 'string'
+            },
+            chunks: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer'
+                    },
+                    text: {
+                        type: 'string'
+                    }
+                },
+                required: ['id']
             }
         },
         required: ['id','title']
-    })
-
-    fastify.addSchema({
-        $id: 'updateChunks',
-        type: 'object',
-        properties: {
-            chunks: {
-                type: 'array',
-                items: {
-                    type: 'object',
-                    properties: {
-                        id: {
-                            type: 'integer'
-                        },
-                        image: {
-                            type: 'string'
-                        },
-                        text: {
-                            type: 'string'
-                        }
-                    },
-                    required: ['id']
-                }
-            }
-        },
-        required: ['chunks']
     })
 
     fastify.addSchema({

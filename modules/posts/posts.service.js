@@ -1,6 +1,7 @@
 const {PrismaClient} = require("@prisma/client")
+const DI = require("../../lib/DI");
 
-const {post, tag, postChunk, $transaction} = new PrismaClient()
+const {post, tag, postChunk, $transaction, likeOnPosts, comment, likeOnComments} = new PrismaClient()
 
 class PostsService{
     async getPosts({filterObject}){
@@ -14,23 +15,53 @@ class PostsService{
         }
     }
 
-    async getPost({id, userId}){
+    async getUserPosts({id, userId}){
         try{
             const data = await post.findMany({
                 where: {
                     id,
-                    organizer: {
-                        id: userId
-                    }
+                    // authorId : userId
+                },
+                include:{
+                    chunks: true,
+                    user: true,
                 }
             })
+
             return data[0]
         }catch (e) {
             console.log('error', e)
         }
     }
 
-    async createPost({title, body, userId, tags}){
+    async getMyPosts({userId}){
+        try{
+            const data = await post.findMany({
+                where: {
+                    authorId : userId
+                },
+                include:{
+                    chunks: true,
+                    user: true,
+                }
+            })
+
+            return data[0]
+        }catch (e) {
+            console.log('error', e)
+        }
+    }
+
+    async createPost({title, body, userId, tags, bufferImage}){
+
+        const imageStorage = DI.injectModule('imageStorage')
+        const data = await imageStorage.storeImageAndReturnUrl(bufferImage)
+
+        console.log('data', data)
+
+        body[0].image = data
+
+        console.log('body', body)
         try{
             return await post.create({
                 data: {
@@ -64,8 +95,8 @@ class PostsService{
 
     }
 
-    async updatePost({ id, title, userId }){
-        return await post.update({
+    async updatePost({ id, title, userId, chunks, chunkPhoto }){
+         await post.update({
             where: {
                 id,
                 authorId: userId
@@ -74,28 +105,37 @@ class PostsService{
                 title
             }
         })
-    }
 
-    async updateChunks(chunkArray, userId){
-        try {
-            for(let updatedChunk of chunkArray){
-                const dataObject = {}
-                if(updatedChunk.image) dataObject.image = updatedChunk.image
-                if(updatedChunk.text) dataObject.text = updatedChunk.text
-                await postChunk.update({
-                    where:{
-                        id: updatedChunk.id,
-                        post: {
-                            authorId: userId
-                        }
-                    },
-                    data: dataObject
-                })
-            }
-        }catch (e) {
-            console.log(e)
-            throw new Error(e)
+        const imageStorage = DI.injectModule('imageStorage')
+        if(chunkPhoto) chunks[0].image = await imageStorage.storeImageAndReturnUrl(chunkPhoto)
+
+        const chunksIds = []
+
+        for await (let chunk of chunks){
+            const createdChunk = await postChunk.upsert({
+                where:{id: chunks.id},
+                update: {
+                    image: chunk.image,
+                    text: chunk.text
+                },
+                create: {
+                    image: chunk.image,
+                    text: chunk.text
+                },
+            })
+
+            chunksIds.push({id: createdChunk.id})
         }
+
+        await post.update({
+            where: {
+                id,
+                authorId: userId,
+                data: {
+                    chunks: chunksIds
+                }
+            }
+        })
     }
 
     async deletePost({id}){
@@ -118,21 +158,87 @@ class PostsService{
         }
     }
 
-    async deleteChunk({id}){
-        try{
-            return await postChunk.delete({
-                where : {
-                    id
-                }
-            })
-        }catch (e) {
-            console.log(e)
-            throw new Error(e)
-        }
-    }
-
     async getTags(){
         return await tag.findMany()
+    }
+
+    async likePost(postId, userId){
+        await likeOnPosts.create({
+            data: {
+                user: {
+                    connect: {
+                        id: userId
+                    }
+                },
+                post: {
+                    connect: {
+                        id: postId
+                    }
+                }
+            }
+        })
+    }
+
+    async unlikePost(postId, userId){
+        await likeOnPosts.deleteMany({
+            where: {
+                postId,
+                userId
+            }
+        })
+    }
+
+    async createComment(text, userId, postId){
+        await post.update({
+            where: {
+                id: postId
+            },
+            data: {
+                comments: {
+                    create: [
+                        {
+                            text,
+                            user: {
+                                connect: {
+                                    id: userId
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+
+    }
+
+    async likeComment(commentId, userId){
+        await comment.update({
+            where: {
+                id: commentId
+            },
+            data:{
+                users: {
+                    create:[
+                        {
+                            user: {
+                                connect: {
+                                    id: userId
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        })
+    }
+
+    async unlikeComment(userId, commentId){
+        await likeOnComments.deleteMany({
+            where:{
+                commentId,
+                userId
+            }
+        })
     }
 }
 
