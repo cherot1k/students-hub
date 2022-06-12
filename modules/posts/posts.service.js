@@ -22,10 +22,7 @@ class PostsService {
                 },
                 include: {
                     chunks: true,
-                    user: {
-                        ticket: true,
-                        id: true
-                    },
+                    user: true,
                 }
             })
 
