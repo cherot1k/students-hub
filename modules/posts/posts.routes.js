@@ -1,6 +1,6 @@
 const DI = require('../../lib/DI')
-const {verify} = require("../jwt");
-const {createResponse, createError} = require("../../lib/http");
+const {verify} = require('../jwt')
+const {createResponse, createError} = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 const SOCIAL_TAG = {
     me: 'me',
@@ -11,17 +11,17 @@ const SOCIAL_TAG = {
 const routes = (fastify, opts, done) => {
     const postService = DI.injectModule('postService')
     fastify.route({
-        method: "GET",
+        method: 'GET',
         url: '/',
-        schema:{
-            description: "Get posts",
-            tags: ["Posts"],
+        schema: {
+            description: 'Get posts',
+            tags: ['Posts'],
             querystring: {
                 type: 'object',
                 properties: {
                     take: {type: 'integer'},
                     skip: {type: 'integer'},
-                    order: {type: 'string', enum: ["asc", "desc"]},
+                    order: {type: 'string', enum: ['asc', 'desc']},
                     sort: {type: 'string'},
                     tags: {
                         type: 'array',
@@ -46,10 +46,10 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler : async (request, reply, done) => {
+        preHandler: async (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
 
             const {take, skip, sort, order, filter, socialTag} = request.query
 
@@ -66,22 +66,22 @@ const routes = (fastify, opts, done) => {
                         }
                     },
                     tags: {
-                        select:{
+                        select: {
                             tag: true
                         }
                     }
                 },
             }
 
-            if(socialTag === SOCIAL_TAG.me){
+            if (socialTag === SOCIAL_TAG.me) {
                 includeObject.where = {...includeObject.where, user: {id: userId}}
             }
-            if(socialTag === SOCIAL_TAG.university){
+            if (socialTag === SOCIAL_TAG.university) {
                 const userService = DI.injectModule('userService')
 
                 const user = await userService.getUserById(userId)
 
-                const universityName = user?.profile?.group?.faculty?.university?.name;
+                const universityName = user?.profile?.group?.faculty?.university?.name
 
                 includeObject.where = {
                     ...includeObject.where,
@@ -99,26 +99,33 @@ const routes = (fastify, opts, done) => {
                 }
             }
 
-            const query = queryBuilder.buildQuery({sort, order, skip: Number(skip), take: Number(take), includeObject, AND: filter? JSON.parse(filter) : {}})
+            const query = queryBuilder.buildQuery({
+                sort,
+                order,
+                skip: Number(skip),
+                take: Number(take),
+                includeObject,
+                AND: filter ? JSON.parse(filter) : {}
+            })
             request.data = query
             done()
         },
         handler: async (request, reply) => {
-            try{
-                const answer = await postService.getPosts({ filterObject: request.data})
+            try {
+                const answer = await postService.getPosts({filterObject: request.data})
                 reply.send(createResponse({data: answer}))
-            }catch (e) {
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "GET",
+        method: 'GET',
         url: '/my-posts',
-        schema:{
-            description: "Get post",
-            tags: ["Posts"],
+        schema: {
+            description: 'Get post',
+            tags: ['Posts'],
             body: {
                 $ref: 'getPosts'
             },
@@ -131,7 +138,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -140,18 +147,18 @@ const routes = (fastify, opts, done) => {
                 const id = request.params.id
                 const {userId} = request.body
                 reply.send(createResponse(await postService.getMyPosts({id, userId})))
-            }catch (e) {
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "GET",
+        method: 'GET',
         url: '/:postId',
-        schema:{
-            description: "Get post",
-            tags: ["Posts"],
+        schema: {
+            description: 'Get post',
+            tags: ['Posts'],
             body: {
                 $ref: 'getPosts'
             },
@@ -164,28 +171,28 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
         handler: async (request, reply) => {
             try {
                 const {userId} = request.body
-                reply.send(createResponse(await postService.getUserPosts({userId})))
-            }catch (e) {
+                reply.send(createResponse(await postService.getPost({userId})))
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/',
         schema: {
-            description: "Get posts",
-            tags: ["Posts"],
+            description: 'Get posts',
+            tags: ['Posts'],
             // body: {
-                // $ref: 'posts'
+            // $ref: 'posts'
             // },
             response: {
                 200: {
@@ -196,7 +203,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -205,14 +212,20 @@ const routes = (fastify, opts, done) => {
                 const {userId} = request.body
                 const data = await request.file()
 
-                const chunkPhoto = await data.toBuffer()
+                const chunkPhoto = data ? await data.toBuffer() : ''
 
                 const {body, title, tags} = Object.values(data.fields).reduce((prev, curr) => {
                     return {...prev, [curr.fieldname]: curr.value}
-                },Object.create(null))
-                const createdPost = await postService.createPost({title, body: [JSON.parse(body)], userId, tags: JSON.parse(tags), bufferImage: chunkPhoto})
-                reply.send(createResponse( {createdPost}))
-            }catch (e) {
+                }, Object.create(null))
+                const createdPost = await postService.createPost({
+                    title,
+                    body: [{text: body, image: ""}],
+                    userId,
+                    tags: JSON.parse(tags),
+                    bufferImage: chunkPhoto
+                })
+                reply.send(createResponse({createdPost}))
+            } catch (e) {
                 console.log('e', e)
                 reply.send(createError(e))
             }
@@ -220,50 +233,56 @@ const routes = (fastify, opts, done) => {
     })
 
     fastify.route({
-        method: "PUT",
-        url: "/post",
+        method: 'PUT',
+        url: '/post',
         schema: {
-            description: "Update post",
-            tags: ["Posts"],
+            description: 'Update post',
+            tags: ['Posts'],
             body: {
                 $ref: 'updatePost'
             },
             response: {
                 200: {
-                 $ref: 'post'
+                    $ref: 'post'
                 }
             }
         },
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
         handler: async (request, reply) => {
-            try{
+            try {
                 const {userId} = request.body
                 const data = await request.file()
 
-                const chunkPhoto = await data.toBuffer()
+                const chunkPhoto = data ? await data.toBuffer() : ''
 
                 const {body, title, tags} = Object.values(data.fields).reduce((prev, curr) => {
                     return {...prev, [curr.fieldname]: curr.value}
-                },Object.create(null))
-                reply.send(createResponse( await postService.updatePost({id, title, userId, chunks: [body], chunkPhoto})))
-            }catch (e) {
+                }, Object.create(null))
+                reply.send(createResponse(await postService.updatePost({
+                    id,
+                    title,
+                    userId,
+                    chunks: [{title: body}],
+                    chunkPhoto
+                })))
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "DELETE",
+        method: 'DELETE',
         url: '/post',
         schema: {
-            description: "Delete post",
-            tags: ["Posts"],
+            description: 'Delete post',
+            tags: ['Posts'],
             querystring: {
                 type: 'object',
                 properties: {
@@ -273,16 +292,14 @@ const routes = (fastify, opts, done) => {
                 },
                 required: ['id']
             },
-            response:{
-                200: {
-
-                }
+            response: {
+                200: {}
             }
         },
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -291,42 +308,42 @@ const routes = (fastify, opts, done) => {
                 const {id} = request.query
                 await postService.deletePost({id})
                 reply.send(createResponse({}))
-            }catch (e) {
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "GET",
+        method: 'GET',
         url: '/tags',
         schema: {
-          200: {
-            type: 'array',
-              items: {
-                type: 'object',
-                  properties: {
-                    id: 'number',
-                    value: 'string'
-                  }
-              }
-          }
+            200: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                        id: 'number',
+                        value: 'string'
+                    }
+                }
+            }
         },
         handler: async (request, reply) => {
             try {
-                reply.send(createResponse( await postService.getTags()))
-            }catch (e) {
+                reply.send(createResponse(await postService.getTags()))
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/post/like',
         schema: {
-            description: "Like post",
-            tags: ["Posts"],
+            description: 'Like post',
+            tags: ['Posts'],
             body: {
                 type: 'object',
                 properties: {
@@ -341,16 +358,16 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
         handler: async (request, reply) => {
-            try{
+            try {
                 const {userId, postId} = request.body
                 await postService.likePost(postId, userId)
                 reply.send(createResponse({}))
-            }catch (e) {
+            } catch (e) {
                 console.log(e)
                 reply.send(createError(e))
             }
@@ -358,11 +375,11 @@ const routes = (fastify, opts, done) => {
     })
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/post/unlike',
         schema: {
-            description: "Unlike post",
-            tags: ["Posts"],
+            description: 'Unlike post',
+            tags: ['Posts'],
             body: {
                 type: 'object',
                 properties: {
@@ -377,7 +394,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -386,18 +403,18 @@ const routes = (fastify, opts, done) => {
                 const {userId, postId} = request.body
                 await postService.unlikePost(postId, userId)
                 reply.send(createResponse({}))
-            }catch (e) {
+            } catch (e) {
                 reply.send(createError(e))
             }
         }
     })
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/post/comment/create',
         schema: {
-            description: "Comment post",
-            tags: ["Posts", "Comments"],
+            description: 'Comment post',
+            tags: ['Posts', 'Comments'],
             body: {
                 type: 'object',
                 properties: {
@@ -413,7 +430,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -422,7 +439,7 @@ const routes = (fastify, opts, done) => {
                 const {userId, postId, text} = request.body
                 await postService.createComment(text, postId, userId)
                 reply.send(createResponse({}))
-            }catch (e) {
+            } catch (e) {
                 console.log('error', e)
                 reply.send(createError(e))
             }
@@ -430,11 +447,11 @@ const routes = (fastify, opts, done) => {
     })
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/post/comment/like',
         schema: {
-            description: "Like comment",
-            tags: ["Posts", "Comments", "Like"],
+            description: 'Like comment',
+            tags: ['Posts', 'Comments', 'Like'],
             body: {
                 type: 'object',
                 properties: {
@@ -449,7 +466,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -458,7 +475,7 @@ const routes = (fastify, opts, done) => {
                 const {userId, commentId} = request.body
                 await postService.likeComment(commentId, userId)
                 reply.send(createResponse({}))
-            }catch (e) {
+            } catch (e) {
                 console.log('error', e)
                 reply.send(createError(e))
             }
@@ -466,11 +483,11 @@ const routes = (fastify, opts, done) => {
     })
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/post/comment/unlike',
         schema: {
-            description: "Unlike comment",
-            tags: ["Posts", "Comments", "Unlike"],
+            description: 'Unlike comment',
+            tags: ['Posts', 'Comments', 'Unlike'],
             body: {
                 type: 'object',
                 properties: {
@@ -485,7 +502,7 @@ const routes = (fastify, opts, done) => {
         preHandler: (request, reply, done) => {
             const userToken = request.headers.authorization.replace(BEARER_STRING, '')
             const userId = verify(userToken).id
-            if(!userId) reply.code(401).send(createError("Unauthorized"))
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
             request.body = {...request.body, userId}
             done()
         },
@@ -494,7 +511,7 @@ const routes = (fastify, opts, done) => {
                 const {userId, commentId} = request.body
                 await postService.unlikeComment(commentId, userId)
                 reply.send(createResponse({}))
-            }catch (e) {
+            } catch (e) {
                 reply.send(createError(e))
             }
         }

@@ -1,72 +1,77 @@
-const {PrismaClient} = require("@prisma/client")
-const DI = require("../../lib/DI");
+const {PrismaClient} = require('@prisma/client')
+const DI = require('../../lib/DI')
 
 const {post, tag, postChunk, $transaction, likeOnPosts, comment, likeOnComments} = new PrismaClient()
 
-class PostsService{
-    async getPosts({filterObject}){
-        try{
-            let data =  await post.findMany(filterObject)
-            //TODO tech debt
-            data = data.map(el => ({...el, tags : el.tags.map(el => el.tag.value)} ))
+class PostsService {
+    async getPosts({filterObject}) {
+        try {
+            let data = await post.findMany(filterObject)
+            data = data.map(el => ({...el, tags: el.tags.map(el => el.tag.value)}))
             return data
-        }catch (e) {
+        } catch (e) {
             console.log('error', e)
         }
     }
 
-    async getUserPosts({id, userId}){
-        try{
+    async getPost({id}) {
+        try {
             const data = await post.findMany({
                 where: {
                     id,
-                    // authorId : userId
                 },
-                include:{
+                include: {
                     chunks: true,
                     user: true,
                 }
             })
 
             return data[0]
-        }catch (e) {
+        } catch (e) {
             console.log('error', e)
         }
     }
 
-    async getMyPosts({userId}){
-        try{
+    async getMyPosts({userId}) {
+        try {
             const data = await post.findMany({
                 where: {
-                    authorId : userId
+                    authorId: userId
                 },
-                include:{
+                include: {
                     chunks: true,
                     user: true,
                 }
             })
 
             return data[0]
-        }catch (e) {
+        } catch (e) {
             console.log('error', e)
         }
     }
 
-    async createPost({title, body, userId, tags, bufferImage}){
+    async createPost({title, body, userId, tags, bufferImage}) {
 
         const imageStorage = DI.injectModule('imageStorage')
         const data = await imageStorage.storeImageAndReturnUrl(bufferImage)
 
-        console.log('data', data)
+        body = body.map(el => ({...el, image: data}))
 
-        body[0].image = data
+        const relatedTags = await tag.findMany({
+            where: {
+                value: {
+                    in: tags
+                }
+            }
+        })
 
-        console.log('body', body)
-        try{
+        const tagIds = relatedTags.map(el => el.id)
+
+        try {
             return await post.create({
                 data: {
                     title,
-                    user:{
+                    user: {
                         connect: {
                             id: userId
                         }
@@ -75,7 +80,7 @@ class PostsService{
                         create: [...body]
                     },
                     tags: {
-                        create: tags.map(el => ({
+                        create: tagIds.map(el => ({
                             tag: {
                                 connect: {
                                     id: el
@@ -85,18 +90,17 @@ class PostsService{
                     }
                 },
                 include: {
-                    chunks: true
+                    chunks: true,
                 }
             })
-        }catch (e) {
-            console.log(e)
+        } catch (e) {
             throw new Error(e)
         }
 
     }
 
-    async updatePost({ id, title, userId, chunks, chunkPhoto }){
-         await post.update({
+    async updatePost({id, title, userId, chunks, chunkPhoto}) {
+        await post.update({
             where: {
                 id,
                 authorId: userId
@@ -107,13 +111,13 @@ class PostsService{
         })
 
         const imageStorage = DI.injectModule('imageStorage')
-        if(chunkPhoto) chunks[0].image = await imageStorage.storeImageAndReturnUrl(chunkPhoto)
+        if (chunkPhoto) chunks[0].image = chunkPhoto ? await imageStorage.storeImageAndReturnUrl(chunkPhoto) : ''
 
         const chunksIds = []
 
-        for await (let chunk of chunks){
+        for await (let chunk of chunks) {
             const createdChunk = await postChunk.upsert({
-                where:{id: chunks.id},
+                where: {id: chunks.id},
                 update: {
                     image: chunk.image,
                     text: chunk.text
@@ -138,10 +142,10 @@ class PostsService{
         })
     }
 
-    async deletePost({id}){
-        try{
+    async deletePost({id}) {
+        try {
             const deletePost = await post.delete({
-                where : {
+                where: {
                     id
                 }
             })
@@ -152,17 +156,21 @@ class PostsService{
             })
 
             return await $transaction([deletePost, deleteChunks])
-        }catch (e) {
+        } catch (e) {
             console.log(e)
             throw new Error(e)
         }
     }
 
-    async getTags(){
-        return await tag.findMany()
+    async getTags() {
+        const data = await tag.findMany()
+
+        return {
+            tags: data.map(el => el.value)
+        }
     }
 
-    async likePost(postId, userId){
+    async likePost(postId, userId) {
         await likeOnPosts.create({
             data: {
                 user: {
@@ -179,7 +187,7 @@ class PostsService{
         })
     }
 
-    async unlikePost(postId, userId){
+    async unlikePost(postId, userId) {
         await likeOnPosts.deleteMany({
             where: {
                 postId,
@@ -188,7 +196,7 @@ class PostsService{
         })
     }
 
-    async createComment(text, userId, postId){
+    async createComment(text, userId, postId) {
         await post.update({
             where: {
                 id: postId
@@ -211,14 +219,14 @@ class PostsService{
 
     }
 
-    async likeComment(commentId, userId){
+    async likeComment(commentId, userId) {
         await comment.update({
             where: {
                 id: commentId
             },
-            data:{
+            data: {
                 users: {
-                    create:[
+                    create: [
                         {
                             user: {
                                 connect: {
@@ -232,9 +240,9 @@ class PostsService{
         })
     }
 
-    async unlikeComment(userId, commentId){
+    async unlikeComment(userId, commentId) {
         await likeOnComments.deleteMany({
-            where:{
+            where: {
                 commentId,
                 userId
             }

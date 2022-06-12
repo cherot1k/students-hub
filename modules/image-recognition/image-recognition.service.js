@@ -1,14 +1,14 @@
-const { createWorker } = require('tesseract.js');
+const {createWorker} = require('tesseract.js')
 const sharp = require('sharp')
 
 const LANGUAGES = {
-    UA: "ukr",
-    EN: "eng"
+    UA: 'ukr',
+    EN: 'eng'
 }
 
 const BLOCKS = [
     {
-        name: "ticket",
+        name: 'ticket',
         language: LANGUAGES.EN,
         rectangle: {
             left: 32,
@@ -71,30 +71,30 @@ const BLOCKS = [
 
 const parseImageData = (imageData) => {
     let data = Object.create(null)
-    for(let chunk of imageData){
-        Object.values(chunk).forEach(el => typeof el === 'string'? el.replace(`\n`, ' '): el)
+    for (let chunk of imageData) {
+        Object.values(chunk).forEach(el => typeof el === 'string' ? el.replace(`\n`, ' ') : el)
         Object.assign(data, chunk)
     }
     return data
 }
 
-class ImageRecognitionService{
+class ImageRecognitionService {
 
-    async recognizeTicketData(imageData){
-            const worker = createWorker();
-            await worker.load();
-            await worker.loadLanguage('eng');
-            await worker.loadLanguage('ukr');
-            const values = [];
-            for (const value of BLOCKS) {
-                await worker.initialize(value.language);
-                const { data: { text } } = await worker.recognize(imageData, { rectangle: value.rectangle });
-                values.push({[value.name]: text.replaceAll('\n', ' ')});
-            }
-            const userImage =  await sharp(imageData).extract({width: 377 , height: 467, top: 194, left: 389}).toBuffer()
-            values.push({userImage})
-            await worker.terminate();
-            return parseImageData(values)
+    async recognizeTicketData(imageData) {
+        const worker = createWorker()
+        await worker.load()
+        await worker.loadLanguage('eng')
+        await worker.loadLanguage('ukr')
+        const values = []
+        for (const value of BLOCKS) {
+            await worker.initialize(value.language)
+            const {data: {text}} = await worker.recognize(imageData, {rectangle: value.rectangle})
+            values.push({[value.name]: text.replaceAll('\n', ' ')})
+        }
+        const userImage = await sharp(imageData).extract({width: 377, height: 467, top: 194, left: 389}).toBuffer()
+        values.push({userImage})
+        await worker.terminate()
+        return parseImageData(values)
     }
 }
 

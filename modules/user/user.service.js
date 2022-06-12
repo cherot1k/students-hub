@@ -1,20 +1,20 @@
-const {PrismaClient} = require("@prisma/client")
+const {PrismaClient} = require('@prisma/client')
 const {user} = new PrismaClient()
 
-class UserService{
-    async getUserById(id){
-        try{
+class UserService {
+    async getUserById(id) {
+        try {
             let data = await user.findUnique({
                 where: {
                     id
                 },
-                include:{
+                include: {
                     profile: {
                         include: {
                             group: {
                                 include: {
                                     faculty: {
-                                        include:{
+                                        include: {
                                             university: true
                                         }
                                     }
@@ -25,7 +25,7 @@ class UserService{
                 }
             })
             return data
-        }catch(e){
+        } catch (e) {
             console.log('error', e)
         }
     }

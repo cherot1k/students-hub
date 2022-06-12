@@ -69,7 +69,7 @@ module.exports = (fastify, opts, done) => {
                 required: ['id']
             }
         },
-        required: ['id','title']
+        required: ['id', 'title']
     })
 
     fastify.addSchema({
@@ -79,13 +79,13 @@ module.exports = (fastify, opts, done) => {
             properties: {
                 take: {type: 'integer'},
                 skip: {type: 'integer'},
-                order: {type: 'string', enum: ["ASC", "DESC"]},
+                order: {type: 'string', enum: ['ASC', 'DESC']},
                 sort: {type: 'string'},
                 filter: {
                     type: 'object',
                     properties: {
                         authorId: {type: 'number'},
-                        header: { type: 'string' },
+                        header: {type: 'string'},
                     },
                 }
             },
@@ -98,7 +98,7 @@ module.exports = (fastify, opts, done) => {
         querystring: {
             type: 'object',
             properties: {
-                id: { type: '"integer'}
+                id: {type: '"integer'}
             },
             required: ['id']
         }
