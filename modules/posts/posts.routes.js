@@ -122,6 +122,35 @@ const routes = (fastify, opts, done) => {
 
     fastify.route({
         method: 'GET',
+        url: '/:postId',
+        schema: {
+            description: 'Get post',
+            tags: ['Posts'],
+            response: {
+                200: {
+                    $ref: 'post'
+                }
+            }
+        },
+        preHandler: (request, reply, done) => {
+            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            const userId = verify(userToken).id
+            if (!userId) reply.code(401).send(createError('Unauthorized'))
+            request.body = {...request.body, userId}
+            done()
+        },
+        handler: async (request, reply) => {
+            try {
+                const {postId} = request.params
+                reply.send(createResponse(await postService.getPost({id: Number(postId)})))
+            } catch (e) {
+                reply.send(createError(e))
+            }
+        }
+    })
+
+    fastify.route({
+        method: 'GET',
         url: '/my-posts',
         schema: {
             description: 'Get post',
@@ -144,41 +173,8 @@ const routes = (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try {
-                const id = request.params.id
                 const {userId} = request.body
-                reply.send(createResponse(await postService.getMyPosts({id, userId})))
-            } catch (e) {
-                reply.send(createError(e))
-            }
-        }
-    })
-
-    fastify.route({
-        method: 'GET',
-        url: '/:postId',
-        schema: {
-            description: 'Get post',
-            tags: ['Posts'],
-            body: {
-                $ref: 'getPosts'
-            },
-            response: {
-                200: {
-                    $ref: 'post'
-                }
-            }
-        },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
-        handler: async (request, reply) => {
-            try {
-                const {userId} = request.body
-                reply.send(createResponse(await postService.getPost({userId})))
+                reply.send(createResponse(await postService.getMyPosts({userId: Number(userId)})))
             } catch (e) {
                 reply.send(createError(e))
             }
