@@ -53,6 +53,7 @@ const routes = (fastify, opts, done) => {
 
             let {take, skip, sort, order, filter, socialTag} = request.query
 
+            socialTag ??= SOCIAL_TAG.all
             sort = sort.length > 0? sort: 'id'
 
             const queryBuilder = DI.injectModule('query-builder')
