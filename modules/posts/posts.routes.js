@@ -99,13 +99,14 @@ const routes = (fastify, opts, done) => {
                 }
             }
 
+            //TODO refactor this and add filters again
             const query = queryBuilder.buildQuery({
                 sort,
                 order,
                 skip: Number(skip),
                 take: Number(take),
                 includeObject,
-                AND: {}
+                AND: []
             })
             request.data = query
             done()
