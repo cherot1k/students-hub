@@ -1,6 +1,8 @@
 const {PrismaClient} = require('@prisma/client')
 const DI = require('../../lib/DI')
 
+const prisma = new PrismaClient()
+
 const {
     post,
     tag,
@@ -10,7 +12,7 @@ const {
     comment,
     likeOnComments,
     postOnTags
-} = new PrismaClient()
+} = prisma
 
 
 
@@ -48,6 +50,9 @@ class PostsService {
                 //
                 // }
             })
+
+            console.log(prisma)
+
 
             const foundPost = data[0]
 
@@ -90,7 +95,6 @@ class PostsService {
                     }
                 }
             });
-
 
 
             return {...foundPost, tags: foundPost?.tags?.map(el => el.tag.value)}
