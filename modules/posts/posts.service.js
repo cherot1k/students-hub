@@ -31,11 +31,14 @@ class PostsService {
                 }
             })
 
-            const foundPost = { ...data[0] }
+            const foundPost = data[0]
 
-            console.log('found', foundPost)
+            foundPost.text = foundPost?.chunks?.[0]?.text
+            foundPost.image = foundPost?.chunks?.[0]?.image
 
-            return {...foundPost, tags: foundPost.tags.map(el => el.tag.value)}
+            delete foundPost.chunks
+
+            return {...foundPost, tags: foundPost?.tags?.map(el => el.tag.value)}
         } catch (e) {
             console.log('error', e)
         }
