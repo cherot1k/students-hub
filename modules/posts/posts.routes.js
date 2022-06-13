@@ -105,7 +105,7 @@ const routes = (fastify, opts, done) => {
                 skip: Number(skip),
                 take: Number(take),
                 includeObject,
-                AND: filter ? JSON.parse(filter) : {}
+                AND: {}
             })
             request.data = query
             done()
