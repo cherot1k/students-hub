@@ -51,7 +51,9 @@ const routes = (fastify, opts, done) => {
             const userId = verify(userToken).id
             if (!userId) reply.code(401).send(createError('Unauthorized'))
 
-            const {take, skip, sort, order, filter, socialTag} = request.query
+            let {take, skip, sort, order, filter, socialTag} = request.query
+
+            sort = sort.length > 0? sort: 'id'
 
             const queryBuilder = DI.injectModule('query-builder')
             const includeObject = {
