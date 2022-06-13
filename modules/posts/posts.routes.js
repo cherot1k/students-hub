@@ -3,9 +3,9 @@ const {verify} = require('../jwt')
 const {createResponse, createError} = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 const SOCIAL_TAG = {
-    me: 'me',
-    university: 'university',
-    all: 'all'
+    me: 'Mine',
+    university: 'My university',
+    all: 'All'
 }
 
 const routes = (fastify, opts, done) => {
@@ -51,7 +51,10 @@ const routes = (fastify, opts, done) => {
             const userId = verify(userToken).id
             if (!userId) reply.code(401).send(createError('Unauthorized'))
 
-            const {take, skip, sort, order, filter, socialTag} = request.query
+            let {take, skip, sort, order, filter, socialTag} = request.query
+
+            socialTag ??= SOCIAL_TAG.all
+            sort = sort.length > 0? sort: 'id'
 
             const queryBuilder = DI.injectModule('query-builder')
             const includeObject = {
@@ -99,13 +102,14 @@ const routes = (fastify, opts, done) => {
                 }
             }
 
+            //TODO refactor this and add filters again
             const query = queryBuilder.buildQuery({
                 sort,
                 order,
                 skip: Number(skip),
                 take: Number(take),
                 includeObject,
-                AND: filter ? JSON.parse(filter) : {}
+                AND: []
             })
             request.data = query
             done()
