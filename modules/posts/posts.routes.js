@@ -3,9 +3,9 @@ const {verify} = require('../jwt')
 const {createResponse, createError} = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 const SOCIAL_TAG = {
-    me: 'me',
-    university: 'university',
-    all: 'all'
+    me: 'Mine',
+    university: 'My university',
+    all: 'All'
 }
 
 const routes = (fastify, opts, done) => {
