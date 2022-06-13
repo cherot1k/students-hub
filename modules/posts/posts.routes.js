@@ -113,7 +113,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             try {
                 const answer = await postService.getPosts({filterObject: request.data})
-                reply.send(createResponse({data: answer}))
+                reply.send(createResponse( answer))
             } catch (e) {
                 reply.send(createError(e))
             }
