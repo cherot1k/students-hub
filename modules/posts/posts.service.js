@@ -1,7 +1,18 @@
 const {PrismaClient} = require('@prisma/client')
 const DI = require('../../lib/DI')
 
-const {post, tag, postChunk, $transaction, likeOnPosts, comment, likeOnComments} = new PrismaClient()
+const {
+    post,
+    tag,
+    postChunk,
+    $transaction,
+    likeOnPosts,
+    comment,
+    likeOnComments,
+    postOnTags
+} = new PrismaClient()
+
+
 
 class PostsService {
     async getPosts({filterObject}) {
@@ -14,29 +25,73 @@ class PostsService {
         }
     }
 
-    async getPost({id}) {
+    async getPost({id, userId}) {
         try {
             const data = await post.findMany({
                 where: {
                     id,
                 },
-                include: {
-                    chunks: true,
-                    user: true,
-                    tags: {
-                        include: {
-                            tag: true
-                        }
-                    }
-                }
+                // include: {
+                //     chunks: true,
+                //     user: true,
+                //     tags: {
+                //         include: {
+                //             tag: true
+                //         }
+                //     },
+                //     comments: true,
+                //     _count:{
+                //         select: {
+                //             likes: true,
+                //         }
+                //     },
+                //
+                // }
             })
 
             const foundPost = data[0]
 
-            foundPost.text = foundPost?.chunks?.[0]?.text
-            foundPost.image = foundPost?.chunks?.[0]?.image
+            const relatedChunks = await postChunk.findMany({
+                where: {
+                    postId: id
+                }
+            });
 
-            delete foundPost.chunks
+            const likeCount = await likeOnPosts.count({
+                where: {
+                    postId: id
+                }
+            });
+
+            const isLiked = await likeOnPosts.findMany({
+                where: {
+                    postId: id,
+                    userId
+                }
+            });
+
+            const relatedTags = await postOnTags.findMany({
+                where: {
+                    postId: id
+                },
+                include:{
+                    tag: true
+                }
+            });
+
+            const relatedComments = await comment.findMany({
+                where: {
+                    postId: id
+                },
+                include: {
+                    users: {
+                        id: true,
+                        profile: true
+                    }
+                }
+            });
+
+
 
             return {...foundPost, tags: foundPost?.tags?.map(el => el.tag.value)}
         } catch (e) {
