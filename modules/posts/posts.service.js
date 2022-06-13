@@ -23,10 +23,19 @@ class PostsService {
                 include: {
                     chunks: true,
                     user: true,
+                    tags: {
+                        include: {
+                            tag: true
+                        }
+                    }
                 }
             })
 
-            return data[0]
+            const foundPost = { ...data[0] }
+
+            console.log('found', foundPost)
+
+            return {...foundPost, tags: foundPost.tags.map(el => el.tag.value)}
         } catch (e) {
             console.log('error', e)
         }
