@@ -103,7 +103,6 @@ model PostsOnTags {
   @@id([postId, tagId])
 }
 
-
 model Group {
   id        Int       @id @default(autoincrement())
   name      String    @unique

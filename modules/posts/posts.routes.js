@@ -145,8 +145,9 @@ const routes = (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try {
+                const {userId} = request.body
                 const {postId} = request.params
-                reply.send(createResponse(await postService.getPost({id: Number(postId)})))
+                reply.send(createResponse(await postService.getPost({id: Number(postId), userId: Number(userId)})))
             } catch (e) {
                 reply.send(createError(e))
             }
