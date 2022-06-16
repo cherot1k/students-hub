@@ -1,5 +1,6 @@
 const {PrismaClient} = require('@prisma/client')
 const DI = require('../../lib/DI')
+const utils = require('./post.utils')
 
 const prisma = new PrismaClient()
 
@@ -11,7 +12,7 @@ const {
     likeOnPosts,
     comment,
     likeOnComments,
-    postOnTags
+    postsOnTags
 } = prisma
 
 
@@ -33,26 +34,7 @@ class PostsService {
                 where: {
                     id,
                 },
-                // include: {
-                //     chunks: true,
-                //     user: true,
-                //     tags: {
-                //         include: {
-                //             tag: true
-                //         }
-                //     },
-                //     comments: true,
-                //     _count:{
-                //         select: {
-                //             likes: true,
-                //         }
-                //     },
-                //
-                // }
             })
-
-            console.log(prisma)
-
 
             const foundPost = data[0]
 
@@ -75,7 +57,7 @@ class PostsService {
                 }
             });
 
-            const relatedTags = await postOnTags.findMany({
+            const relatedTags = await postsOnTags.findMany({
                 where: {
                     postId: id
                 },
@@ -89,15 +71,27 @@ class PostsService {
                     postId: id
                 },
                 include: {
-                    users: {
-                        id: true,
-                        profile: true
-                    }
+                    user: {
+                        include: {
+                            profile: true
+                        }
+                    },
+                    users: true
                 }
             });
 
 
-            return {...foundPost, tags: foundPost?.tags?.map(el => el.tag.value)}
+            const model = utils.format({
+                post: foundPost,
+                chunks: relatedChunks,
+                likeCount,
+                isLiked,
+                tags: relatedTags,
+                comments: relatedComments,
+                userId
+            })
+
+            return model
         } catch (e) {
             console.log('error', e)
         }
