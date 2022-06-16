@@ -3,6 +3,8 @@ const {createResponse, createError} = require("../../lib/http");
 const BEARER_STRING = 'Bearer '
 
 const routes =  (fastify, opts, done) => {
+    // fastify.decorateRequest('ans', 42)
+
     fastify.route({
         method: "POST",
         url: '/login',

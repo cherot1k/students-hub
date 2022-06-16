@@ -9,8 +9,19 @@ const fastify = require('fastify')({
 const fastify_swagger = require('fastify-swagger')
 const {MODULE_PATH} = require('./utils/constants')
 const DI = require('./lib/DI')
+
+const registerContextRoutes = (server) => {
+  return ({routes, prefix}) => {
+    server.register(async function ctx(context){
+      context.register(routes, {prefix})
+    })
+  }
+}
+
 try{
   (async () => {
+    const regRoute = registerContextRoutes(fastify)
+
     fastify.register(require('fastify-multipart'), {
       // addToBody: true
     })
@@ -40,7 +51,7 @@ try{
     CorsSettings(fastify)
     Types(fastify)
     loadModule({ callback: ({service, name}) => DI.registerModule(name, service), matchPattern: /\.service.js/, filepath: MODULE_PATH, importName: "module"})
-    loadModule({callback:  ({routes, prefix}) => fastify.register(routes, {prefix}), matchPattern: /\.routes.js/, filepath: MODULE_PATH, importName: "data"})
+    loadModule({callback:  regRoute, matchPattern: /\.routes.js/, filepath: MODULE_PATH, importName: "data"})
     fastify.addHook('preValidation', (request, reply, done) => {
       request.log.info('Request body is', request.body)
       done()
