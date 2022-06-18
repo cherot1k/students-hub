@@ -2,6 +2,12 @@ const {PrismaClient} = require('@prisma/client')
 const DI = require('../../lib/DI')
 const utils = require('./post.utils')
 
+const SOCIAL_TAG = {
+    me: 'Mine',
+    university: 'My university',
+    all: 'All'
+}
+
 const prisma = new PrismaClient()
 
 const {
@@ -12,17 +18,141 @@ const {
     likeOnPosts,
     comment,
     likeOnComments,
-    postsOnTags
+    postsOnTags,
+    user,
 } = prisma
 
 
 
 class PostsService {
-    async getPosts({filterObject}) {
+    async getPosts(data) {
+        let {
+            socialTag,
+            take,
+            skip,
+            filter,
+            userId
+        } = data
+
+        socialTag ??= SOCIAL_TAG.all
+
+        let SOCIAL_TAG_FILTER;
+
+        if(socialTag === SOCIAL_TAG.all){
+            SOCIAL_TAG_FILTER = {}
+        }
+
+        if(socialTag === SOCIAL_TAG.me) {
+            SOCIAL_TAG_FILTER = {
+                user: {
+                    id: userId
+                }
+            }
+        }
+
+        if(socialTag === SOCIAL_TAG.university) {
+            const userData = await user.findUnique({
+                id: userId,
+                include: {
+                    profile: {
+                        include: {
+                            group: {
+                                include: {
+                                    faculty: {
+                                        include: {
+                                            university: true
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+
+            const universityName = userData?.profile?.group?.faculty?.university?.name
+
+            SOCIAL_TAG_FILTER = {
+                user: {
+                    profile: {
+                        group: {
+                            faculty: {
+                                university: {
+                                    name: universityName
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        const relatedTags = await tag.findMany({
+            where: {
+                value: {
+                    in: filter?.tags
+                }
+            }
+        })
+
+        const tagIds = relatedTags.map(el => el.id)
+
+        const POST_TAGS_FILTER = {
+            tags: {
+                where:{
+                    tagId: {
+                        in: tagIds
+                    }
+                }
+            }
+        }
+
+        const FILTER_OBJECT = [
+            SOCIAL_TAG_FILTER,
+            // POST_TAGS_FILTER
+        ]
+
         try {
-            let data = await post.findMany(filterObject)
-            data = data.map(el => ({...el, tags: el.tags.map(el => el.tag.value)}))
-            return data
+            let data = await post.findMany({
+                skip,
+                take,
+                orderBy: {
+                    id: 'desc'
+                },
+                where: {
+                    AND: FILTER_OBJECT,
+                },
+                include: {
+                    _count:{
+                        select: {
+                            likes: true,
+                            comments: true
+                        }
+                    },
+                    tags: {
+                        where: {
+                            tagId: {
+                                in: tagIds
+                            }
+                        },
+                        include: {
+                            tag: true
+                        }
+                    },
+                    chunks: true,
+                    user: {
+                        include: {
+                            profile: true
+                        }
+                    },
+                }
+            })
+
+            const answer = utils.formatMultiple(data)
+
+
+            // data = data.map(el => ({...el, tags: el.tags.map(el => el.tag.value)}))
+            return answer
         } catch (e) {
             console.log('error', e)
         }
@@ -81,7 +211,7 @@ class PostsService {
             });
 
 
-            const model = utils.format({
+            const model = utils.formatSinglePost({
                 post: foundPost,
                 chunks: relatedChunks,
                 likeCount,

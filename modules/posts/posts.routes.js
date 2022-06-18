@@ -2,6 +2,7 @@ const DI = require('../../lib/DI')
 const {verify} = require('../jwt')
 const {createResponse, createError} = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
+
 const SOCIAL_TAG = {
     me: 'Mine',
     university: 'My university',
@@ -51,74 +52,85 @@ const routes = (fastify, opts, done) => {
             const userId = verify(userToken).id
             if (!userId) reply.code(401).send(createError('Unauthorized'))
 
-            let {take, skip, sort, order, filter, socialTag} = request.query
+            request.body = {...request.body, userId}
 
-            socialTag ??= SOCIAL_TAG.all
-            sort = sort.length > 0? sort: 'id'
+            // const queryBuilder = DI.injectModule('query-builder')
+            // const includeObject = {
+            //     where: {},
+            //     include: {
+            //         chunks: {
+            //             select: {
+            //                 id: true,
+            //                 image: true,
+            //                 text: true,
+            //                 createdAt: true,
+            //             }
+            //         },
+            //         tags: {
+            //             select: {
+            //                 tag: true
+            //             }
+            //         }
+            //     },
+            // }
 
-            const queryBuilder = DI.injectModule('query-builder')
-            const includeObject = {
-                where: {},
-                include: {
-                    chunks: {
-                        select: {
-                            id: true,
-                            image: true,
-                            text: true,
-                            createdAt: true,
-                        }
-                    },
-                    tags: {
-                        select: {
-                            tag: true
-                        }
-                    }
-                },
-            }
-
-            if (socialTag === SOCIAL_TAG.me) {
-                includeObject.where = {...includeObject.where, user: {id: userId}}
-            }
-            if (socialTag === SOCIAL_TAG.university) {
-                const userService = DI.injectModule('userService')
-
-                const user = await userService.getUserById(userId)
-
-                const universityName = user?.profile?.group?.faculty?.university?.name
-
-                includeObject.where = {
-                    ...includeObject.where,
-                    user: {
-                        profile: {
-                            group: {
-                                faculty: {
-                                    university: {
-                                        name: universityName
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            // if (socialTag === SOCIAL_TAG.me) {
+            //     includeObject.where = {...includeObject.where, user: {id: userId}}
+            // }
+            // if (socialTag === SOCIAL_TAG.university) {
+            //     const userService = DI.injectModule('userService')
+            //
+            //     const user = await userService.getUserById(userId)
+            //
+            //     const universityName = user?.profile?.group?.faculty?.university?.name
+            //
+            //     includeObject.where = {
+            //         ...includeObject.where,
+            //         user: {
+            //             profile: {
+            //                 group: {
+            //                     faculty: {
+            //                         university: {
+            //                             name: universityName
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
 
             //TODO refactor this and add filters again
-            const query = queryBuilder.buildQuery({
-                sort,
-                order,
-                skip: Number(skip),
-                take: Number(take),
-                includeObject,
-                AND: []
-            })
-            request.data = query
+            // const query = queryBuilder.buildQuery({
+            //     sort,
+            //     order,
+            //     skip: Number(skip),
+            //     take: Number(take),
+            //     includeObject,
+            //     AND: []
+            // })
+            // request.data = query
             done()
         },
         handler: async (request, reply) => {
+            const {take, skip, filter, socialTag} = request.query
+            const {userId} = request.body
+
+            const data = {
+                take: Number(take),
+                skip: Number(skip),
+                sort : 'id',
+                order: 'desc',
+                filter,
+                socialTag,
+                userId
+            }
+
             try {
-                const answer = await postService.getPosts({filterObject: request.data})
-                reply.send(createResponse( answer))
+                const answer = await postService.getPosts(data)
+                reply.send(createResponse(answer))
             } catch (e) {
+                console.log(e)
                 reply.send(createError(e))
             }
         }
