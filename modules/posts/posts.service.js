@@ -2,6 +2,8 @@ const {PrismaClient} = require('@prisma/client')
 const DI = require('../../lib/DI')
 const utils = require('./post.utils')
 
+const DEFAULT_IMAGE_URL = "http://res.cloudinary.com/dts7nyiog/image/upload/v1655124121/users/yylbf1ljyehqigwqaatz.jpg"
+
 const SOCIAL_TAG = {
     me: 'Mine',
     university: 'My university',
@@ -295,7 +297,7 @@ class PostsService {
     }
 
     async updatePost({id, title, userId, chunks, chunkPhoto}) {
-        await post.update({
+        await post.updateMany({
             where: {
                 id,
                 authorId: userId
@@ -306,20 +308,27 @@ class PostsService {
         })
 
         const imageStorage = DI.injectModule('imageStorage')
-        if (chunkPhoto) chunks[0].image = chunkPhoto ? await imageStorage.storeImageAndReturnUrl(chunkPhoto) : ''
+        if (chunkPhoto.length > 0) {
+            chunks[0].image = chunkPhoto ? await imageStorage.storeImageAndReturnUrl(chunkPhoto) : ''
+        }else {
+            const relatedChunks = await postChunk.findMany({where: {postId: id}})
+            chunks[0].image = relatedChunks[0]?.image || DEFAULT_IMAGE_URL
+
+        }
 
         const chunksIds = []
 
         for await (let chunk of chunks) {
             const createdChunk = await postChunk.upsert({
-                where: {id: chunks.id},
+                where: {postId: id},
                 update: {
                     image: chunk.image,
                     text: chunk.text
                 },
                 create: {
                     image: chunk.image,
-                    text: chunk.text
+                    text: chunk.text,
+                    postId: id
                 },
             })
 
@@ -331,7 +340,9 @@ class PostsService {
                 id,
                 authorId: userId,
                 data: {
-                    chunks: chunksIds
+                    chunks: {
+                        connect: chunksIds.map(el => ({id: el.id}))
+                    }
                 }
             }
         })
@@ -442,6 +453,18 @@ class PostsService {
                 userId
             }
         })
+    }
+
+    async createOrUpdatePost({title, body, userId, tags, imageData, id}){
+        try{
+            if(id){
+                return await this.updatePost({id: Number(id), userId, chunks: [{text: body}], chunkPhoto: imageData, title})
+            }else {
+                return await this.createPost({title, body: [{text: body}], userId, tags, bufferImage: imageData})
+            }
+        }catch (e) {
+            console.log(e)
+        }
     }
 }
 

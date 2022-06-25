@@ -9,7 +9,18 @@ const SOCIAL_TAG = {
     all: 'All'
 }
 
+const preHandler = async (request, reply, done) => {
+    const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+    const userId = verify(userToken).id
+    // if (!userId) reply.code(401).send(createError('Unauthorized'))
+
+    request.body = {...request.body, userId}
+
+    done()
+}
+
 const routes = (fastify, opts, done) => {
+
     const postService = DI.injectModule('postService')
     fastify.route({
         method: 'GET',
@@ -47,71 +58,7 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler: async (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-
-            request.body = {...request.body, userId}
-
-            // const queryBuilder = DI.injectModule('query-builder')
-            // const includeObject = {
-            //     where: {},
-            //     include: {
-            //         chunks: {
-            //             select: {
-            //                 id: true,
-            //                 image: true,
-            //                 text: true,
-            //                 createdAt: true,
-            //             }
-            //         },
-            //         tags: {
-            //             select: {
-            //                 tag: true
-            //             }
-            //         }
-            //     },
-            // }
-
-            // if (socialTag === SOCIAL_TAG.me) {
-            //     includeObject.where = {...includeObject.where, user: {id: userId}}
-            // }
-            // if (socialTag === SOCIAL_TAG.university) {
-            //     const userService = DI.injectModule('userService')
-            //
-            //     const user = await userService.getUserById(userId)
-            //
-            //     const universityName = user?.profile?.group?.faculty?.university?.name
-            //
-            //     includeObject.where = {
-            //         ...includeObject.where,
-            //         user: {
-            //             profile: {
-            //                 group: {
-            //                     faculty: {
-            //                         university: {
-            //                             name: universityName
-            //                         }
-            //                     }
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            //TODO refactor this and add filters again
-            // const query = queryBuilder.buildQuery({
-            //     sort,
-            //     order,
-            //     skip: Number(skip),
-            //     take: Number(take),
-            //     includeObject,
-            //     AND: []
-            // })
-            // request.data = query
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             const {take, skip, filter, socialTag} = request.query
             const {userId} = request.body
@@ -148,13 +95,7 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId} = request.body
@@ -181,13 +122,7 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId} = request.body
@@ -213,13 +148,7 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId} = request.body
@@ -260,13 +189,7 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId} = request.body
@@ -309,13 +232,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {id} = request.query
@@ -368,13 +285,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId, postId} = request.body
@@ -404,13 +315,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId, postId} = request.body
@@ -440,13 +345,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId, postId, text} = request.body
@@ -476,13 +375,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId, commentId} = request.body
@@ -512,13 +405,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler: (request, reply, done) => {
-            const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-            const userId = verify(userToken).id
-            if (!userId) reply.code(401).send(createError('Unauthorized'))
-            request.body = {...request.body, userId}
-            done()
-        },
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const {userId, commentId} = request.body
@@ -529,6 +416,57 @@ const routes = (fastify, opts, done) => {
             }
         }
     })
+
+    fastify.route({
+        method: 'POST',
+        url: '/upsert',
+        schema: {
+            description: 'Upsert post',
+            tags: ['Posts'],
+            response: {
+                200: {}
+            }
+        },
+        preHandler,
+        handler: async (request, reply) => {
+            try {
+                const {userId} = request.body
+                const files = await request.saveRequestFiles()
+                const data = files[0]
+
+                const buffer = await data.toBuffer()
+                const chunkPhoto = buffer?.length > 0? buffer : null
+
+                const fields = data?.fields
+
+                const obj = Object.values(fields).reduce((prev, curr) => {
+                    return {...prev, [curr.fieldname]: curr.value}
+                }, Object.create(null))
+
+
+                const {body, title, tags} = obj
+
+                const id = obj?.id || null
+
+                const res = await postService.createOrUpdatePost({
+                    title,
+                    body,
+                    userId,
+                    tags: JSON.parse(tags),
+                    imageData: chunkPhoto,
+                    id,
+                })
+
+                console.log(res)
+
+                reply.send(createResponse(res))
+            } catch (e) {
+                console.log('e', e)
+                reply.send(createError(e))
+            }
+        }
+    })
+
     done()
 }
 

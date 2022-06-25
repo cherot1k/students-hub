@@ -52,15 +52,15 @@ try{
     Types(fastify)
     loadModule({ callback: ({service, name}) => DI.registerModule(name, service), matchPattern: /\.service.js/, filepath: MODULE_PATH, importName: "module"})
     loadModule({callback:  regRoute, matchPattern: /\.routes.js/, filepath: MODULE_PATH, importName: "data"})
-    fastify.addHook('preValidation', (request, reply, done) => {
-      request.log.info('Request body is', request.body)
-      done()
-    })
+    // fastify.addHook('preValidation', (request, reply, done) => {
+    //   request.log.info('Request body is', request.body)
+    //   done()
+    // })
 
-    fastify.addHook('onSend', async (request, reply, payload) => {
-      reply.log.info(payload)
-      return payload
-    })
+    // fastify.addHook('onSend', async (request, reply, payload) => {
+    //   reply.log.info(payload)
+    //   return payload
+    // })
 
     fastify.get('/', {},(request, reply) => reply.send('hellos, world') )
 
