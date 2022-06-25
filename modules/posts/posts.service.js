@@ -127,10 +127,10 @@ class PostsService {
                 include: {
                     _count:{
                         select: {
-                            likes: true,
                             comments: true
                         }
                     },
+                    likes: true,
                     tags: {
                         where: {
                             tagId: {

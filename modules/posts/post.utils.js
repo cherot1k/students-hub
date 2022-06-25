@@ -50,13 +50,15 @@ module.exports = {
             const userProfile = el?.user?.profile
             const user = el?.user
             const countValues = el?._count
+            const likes = el.likes
 
             formattedObject = {
                 text: chunk?.text,
                 image: chunk?.image,
                 pictureProfileUrl: userProfile?.imageUrl,
                 username: `${userProfile.first_name + userProfile.last_name}`,
-                likesCount: countValues.likes,
+                likesCount: likes.length,
+                isLiked: !!(likes.find(el => el.userId === user.id)),
                 commentsCount: countValues.comments,
                 title: el.title,
                 id: el.id,
