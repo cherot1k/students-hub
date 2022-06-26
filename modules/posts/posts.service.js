@@ -409,7 +409,7 @@ class PostsService {
         })
     }
 
-    async createComment(text, userId, postId) {
+    async createComment(text, postId, userId) {
         await post.update({
             where: {
                 id: postId
