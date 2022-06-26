@@ -1,3 +1,5 @@
+const deepClone = require('lodash.clonedeep')
+
 const TYPES = {
     single: 'single',
     multiple: 'multiple'
@@ -7,7 +9,7 @@ module.exports = {
     TYPES,
     formatSinglePost: ({post, chunks, likeCount, isLiked, tags, comments, userId}) => {
 
-        const user = JSON.parse(JSON.stringify(post.user))
+        const user = deepClone(post.user)
         delete post.user
 
         const chunk = chunks[0]
