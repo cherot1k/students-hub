@@ -62,7 +62,7 @@ module.exports = {
             formattedObject = {
                 text: chunk?.text,
                 image: chunk?.image,
-                pictureProfileUrl: userProfile?.imageUrl,
+                profilePictureUrl: userProfile?.imageUrl,
                 username: `${userProfile.first_name + userProfile.last_name}`,
                 likesCount: likes.length,
                 isLiked: !!(likes.find(el => el.userId === user.id)),
