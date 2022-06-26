@@ -429,7 +429,24 @@ class PostsService {
                 }
             }
         })
+    }
 
+    async getPostComments(postId){
+        const comments = await comment.findMany({
+            where: {
+                postId: Number(postId)
+            },
+            include: {
+                user: {
+                    include: {
+                        profile: true
+                    }
+                },
+                users: true
+            }
+        })
+
+        return utils.formatComments(comments)
     }
 
     async likeComment(commentId, userId) {

@@ -328,6 +328,19 @@ const routes = (fastify, opts, done) => {
     })
 
     fastify.route({
+        method: 'GET',
+        url: '/post/comments/:postId',
+        schema: {
+
+        },
+        handler: async (request, reply, done) => {
+            const {postId} = request.params
+            const res = await postService.getPostComments(postId)
+            reply.send(createResponse(res))
+        }
+    })
+
+    fastify.route({
         method: 'POST',
         url: '/post/comment/create',
         schema: {

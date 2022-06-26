@@ -30,21 +30,7 @@ module.exports = {
 
         post.profilePictureUrl = user.profile.imageUrl
 
-        // if(type === TYPES.single){
-        //     post.commentsCount = comments.length
-        // }else{
-        console.log('comments', comments)
-            post.comments = comments.map(el => ({
-                comment: el.text,
-                id: el.id,
-                username: `${el?.user?.profile?.first_name} ${el?.user?.profile?.last_name}`,
-                profilePictureUrl: el?.user?.profile?.imageUrl,
-                timeStamp: el?.createdAt,
-                likeCount: el?.users?.length || 0,
-                isLiked: !!el?.users?.find(el => el.userId === userId)
-            }))
-        // }
-
+        post.comments = this.formatComments(comments, userId)
 
         return post
     },
@@ -78,5 +64,16 @@ module.exports = {
 
         return formattedArray
 
+    },
+    formatComments: (comments, userId) => {
+        return comments.map(el => ({
+            comment: el.text,
+            id: el.id,
+            username: `${el?.user?.profile?.first_name} ${el?.user?.profile?.last_name}`,
+            profilePictureUrl: el?.user?.profile?.imageUrl,
+            timeStamp: el?.createdAt,
+            likeCount: el?.users?.length || 0,
+            isLiked: !!el?.users?.find(el => el.userId === userId)
+        }))
     }
 }
