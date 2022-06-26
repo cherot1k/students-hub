@@ -166,6 +166,13 @@ class PostsService {
                 where: {
                     id,
                 },
+                include: {
+                    user: {
+                        include:{
+                            profile: true
+                        }
+                    }
+                }
             })
 
             const foundPost = data[0]
@@ -377,7 +384,7 @@ class PostsService {
     }
 
     async likePost(postId, userId) {
-        await likeOnPosts.create({
+        return await likeOnPosts.create({
             data: {
                 user: {
                     connect: {
@@ -394,7 +401,7 @@ class PostsService {
     }
 
     async unlikePost(postId, userId) {
-        await likeOnPosts.deleteMany({
+        return await likeOnPosts.deleteMany({
             where: {
                 postId,
                 userId

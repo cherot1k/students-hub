@@ -7,6 +7,9 @@ module.exports = {
     TYPES,
     formatSinglePost: ({post, chunks, likeCount, isLiked, tags, comments, userId}) => {
 
+        const user = JSON.parse(JSON.stringify(post.user))
+        delete post.user
+
         const chunk = chunks[0]
 
         if(chunk){
@@ -22,6 +25,10 @@ module.exports = {
         post.likesCount = likeCount
 
         post.isLiked = isLiked.length === 1
+
+        post.username = `${user.profile.first_name} ${user.profile.last_name}`
+
+        post.profilePictureUrl = user.profile.imageUrl
 
         // if(type === TYPES.single){
         //     post.commentsCount = comments.length
@@ -63,7 +70,7 @@ module.exports = {
                 title: el.title,
                 id: el.id,
                 createdAt: el.createdAt,
-                userId: user?.id,
+                authorId: user?.id,
                 tags: el.tags?.map(el => el?.tag?.value)
             }
             return formattedObject

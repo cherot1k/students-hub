@@ -419,6 +419,32 @@ const routes = (fastify, opts, done) => {
 
     fastify.route({
         method: 'POST',
+        url: '/post/toggle-like',
+        schema: {
+            body:{
+                type: 'object',
+                properties: {
+                    isLiked: {type: 'boolean',},
+                    postId: {type: 'integer'}
+                }
+            }
+        },
+        preHandler,
+        handler: async (request, reply, done) => {
+            const {isLiked, postId, userId} = request.body
+
+            if(isLiked){
+                await postService.likePost(postId, userId)
+            }else {
+                await postService.unlikePost(postId, userId)
+            }
+
+            return reply.send( createResponse(isLiked))
+        }
+    })
+
+    fastify.route({
+        method: 'POST',
         url: '/upsert',
         schema: {
             description: 'Upsert post',
@@ -456,8 +482,6 @@ const routes = (fastify, opts, done) => {
                     imageData: chunkPhoto,
                     id,
                 })
-
-                console.log(res)
 
                 reply.send(createResponse(res))
             } catch (e) {
