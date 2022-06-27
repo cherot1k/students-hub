@@ -100,7 +100,8 @@ const routes = (fastify, opts, done) => {
             try {
                 const {userId} = request.body
                 const {postId} = request.params
-                reply.send(createResponse(await postService.getPost({id: Number(postId), userId: Number(userId)})))
+                const post = await postService.getPost({id: Number(postId), userId: Number(userId)})
+                reply.send(createResponse(post))
             } catch (e) {
                 reply.send(createError(e))
             }
