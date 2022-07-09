@@ -12,7 +12,7 @@ const SOCIAL_TAG = {
 const preHandler = async (request, reply, done) => {
     const userToken = request.headers.authorization.replace(BEARER_STRING, '')
     const userId = verify(userToken).id
-    // if (!userId) reply.code(401).send(createError('Unauthorized'))
+    if (!userId) reply.code(401).send(createError('Unauthorized'))
 
     request.body = {...request.body, userId}
 
@@ -149,10 +149,11 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        preHandler,
+        // preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId} = request.body
+                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+                const userId = verify(userToken).id
                 const data = await request.file()
 
                 const chunkPhoto = data ? await data.toBuffer() : ''
@@ -496,9 +497,10 @@ const routes = (fastify, opts, done) => {
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId} = request.body
-                const files = await request.saveRequestFiles()
-                const data = files[0]
+                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+                const userId = verify(userToken).id
+
+                const data = await request.file()
 
                 const buffer = await data.toBuffer()
                 const chunkPhoto = buffer?.length > 0? buffer : null
