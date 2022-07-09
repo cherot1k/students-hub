@@ -256,9 +256,8 @@ class PostsService {
     }
 
     async createPost({title, body, userId, tags, bufferImage}) {
-
         const imageStorage = DI.injectModule('imageStorage')
-        const data = await imageStorage.storeImageAndReturnUrl(bufferImage)
+        const data = bufferImage? await imageStorage.storeImageAndReturnUrl(bufferImage): DEFAULT_IMAGE_URL
 
         body = body.map(el => ({...el, image: data}))
 

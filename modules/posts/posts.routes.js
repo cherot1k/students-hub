@@ -154,13 +154,12 @@ const routes = (fastify, opts, done) => {
             try {
                 const userToken = request.headers.authorization.replace(BEARER_STRING, '')
                 const userId = verify(userToken).id
+
                 const data = await request.file()
 
-                const chunkPhoto = data ? await data.toBuffer() : ''
+                const chunkPhoto = data ? await data?.toBuffer() : ''
 
-                const {body, title, tags} = Object.values(await data?.fields).reduce((prev, curr) => {
-                    return {...prev, [curr.fieldname]: curr.value}
-                }, Object.create(null))
+                const {body, title, tags} = request.body
                 const createdPost = await postService.createPost({
                     title,
                     body: [{text: body, image: ""}],
@@ -494,7 +493,7 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler,
+        // preHandler,
         handler: async (request, reply) => {
             try {
                 const userToken = request.headers.authorization.replace(BEARER_STRING, '')
@@ -502,15 +501,10 @@ const routes = (fastify, opts, done) => {
 
                 const data = await request.file()
 
-                const buffer = await data.toBuffer()
+                const buffer = await data?.toBuffer() || ''
                 const chunkPhoto = buffer?.length > 0? buffer : null
 
-                const fields = data?.fields
-
-                const obj = Object.values(fields).reduce((prev, curr) => {
-                    return {...prev, [curr.fieldname]: curr.value}
-                }, Object.create(null))
-
+                const obj = request.body
 
                 const {body, title, tags} = obj
 

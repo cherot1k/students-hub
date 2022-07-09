@@ -23,7 +23,7 @@ try{
     const regRoute = registerContextRoutes(fastify)
 
     fastify.register(require('fastify-multipart'), {
-      // addToBody: true
+      addToBody: true
     })
     fastify.register(fastify_swagger, {
       routePrefix: '/doc',
