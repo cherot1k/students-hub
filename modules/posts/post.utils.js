@@ -46,10 +46,12 @@ module.exports = {
 
         post.comments = formatComments(comments, userId)
 
+        post.isOwnPost = user.id === userId
+
         return post
     },
 
-    formatMultiple: (postArray) => {
+    formatMultiple: (postArray, userId) => {
         const formattedArray = postArray.map(el => {
             let formattedObject;
 
@@ -71,7 +73,8 @@ module.exports = {
                 id: el.id,
                 createdAt: el.createdAt,
                 authorId: user?.id,
-                tags: el.tags?.map(el => el?.tag?.value)
+                tags: el.tags?.map(el => el?.tag?.value),
+                isOwnPost: userId === user?.id
             }
             return formattedObject
         })

@@ -150,7 +150,7 @@ class PostsService {
                 }
             })
 
-            const answer = utils.formatMultiple(data)
+            const answer = utils.formatMultiple(data, userId)
 
 
             // data = data.map(el => ({...el, tags: el.tags.map(el => el.tag.value)}))
@@ -169,6 +169,7 @@ class PostsService {
                 include: {
                     user: {
                         include:{
+
                             profile: true
                         }
                     }

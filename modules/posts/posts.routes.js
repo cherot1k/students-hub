@@ -157,7 +157,7 @@ const routes = (fastify, opts, done) => {
 
                 const chunkPhoto = data ? await data.toBuffer() : ''
 
-                const {body, title, tags} = Object.values(data.fields).reduce((prev, curr) => {
+                const {body, title, tags} = Object.values(await data?.fields).reduce((prev, curr) => {
                     return {...prev, [curr.fieldname]: curr.value}
                 }, Object.create(null))
                 const createdPost = await postService.createPost({
