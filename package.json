@@ -9,7 +9,7 @@
   "scripts": {
     "test": "jest",
     "start": "node server.js",
-    "prestart": "prisma migrate dev --name init && npx prisma db seed"
+    "prestart": "prisma db push --accept-data-loss && prisma migrate dev --name init && npx prisma db seed"
   },
   "keywords": [],
   "author": "",
