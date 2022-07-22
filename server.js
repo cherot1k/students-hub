@@ -42,6 +42,7 @@ try{
       transformStaticCSP: (header) => header,
       exposeRoute: true,
     })
+
     DataSchemas(fastify)
     CorsSettings(fastify)
     Types(fastify)
