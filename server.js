@@ -50,7 +50,6 @@ try{
 
     fastify.get('/', {},(request, reply) => reply.send('hellos, world') )
 
-
     fastify.listen(process.env.PORT || 2000, '0.0.0.0', function (err){
       if(err) console.log('error',err)
       fastify.log.info(`server listening on ${process.env.PORT}`)
