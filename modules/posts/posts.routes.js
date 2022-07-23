@@ -503,7 +503,7 @@ const routes = (fastify, opts, done) => {
 
                 const {body, title, tags, userId} = obj
 
-                const id = obj?.id || null
+                const id = obj?.id === "null"? obj?.id : null
 
                 const res = await postService.createOrUpdatePost({
                     title,
