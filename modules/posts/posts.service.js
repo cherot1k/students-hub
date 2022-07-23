@@ -315,7 +315,7 @@ class PostsService {
         })
 
         const imageStorage = DI.injectModule('imageStorage')
-        if (chunkPhoto.length > 0) {
+        if (chunkPhoto?.length > 0) {
             chunks[0].image = chunkPhoto ? await imageStorage.storeImageAndReturnUrl(chunkPhoto) : ''
         }else {
             const relatedChunks = await postChunk.findMany({where: {postId: id}})
@@ -326,6 +326,12 @@ class PostsService {
         const chunksIds = []
 
         for await (let chunk of chunks) {
+            const updateChunk = {
+                text: chunk.text,
+            }
+
+            if(chunk.image !== DEFAULT_IMAGE_URL) updateChunk.image = chunk.image
+
             const createdChunk = await postChunk.upsert({
                 where: {postId: id},
                 update: {

@@ -490,10 +490,11 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        preHandler,
+        // preHandler,
         handler: async (request, reply) => {
             try {
-
+                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+                const userId = verify(userToken).id
                 const data = await request.file()
 
                 const buffer = await data?.toBuffer() || ''
@@ -501,9 +502,9 @@ const routes = (fastify, opts, done) => {
 
                 const obj = request.body
 
-                const {body, title, tags, userId} = obj
+                const {body, title, tags} = obj
 
-                const id = obj?.id === "null"? obj?.id : null
+                const id = obj.id === "null"? null : obj.id
 
                 const res = await postService.createOrUpdatePost({
                     title,
