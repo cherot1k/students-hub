@@ -495,16 +495,14 @@ const routes = (fastify, opts, done) => {
             try {
                 const userToken = request.headers.authorization.replace(BEARER_STRING, '')
                 const userId = verify(userToken).id
-                const data = await request.file()
+                // const data = await request.file()
 
-                const buffer = await data?.toBuffer() || ''
+                const buffer = await request.body?.file?.[0]?.data || ''
                 const chunkPhoto = buffer?.length > 0? buffer : null
 
-                const obj = request.body
+                const {body, title, tags} = request.body
 
-                const {body, title, tags} = obj
-
-                const id = obj.id === "null"? null : obj.id
+                const id = request.body.id === "null"? null : request.body.id
 
                 const res = await postService.createOrUpdatePost({
                     title,
