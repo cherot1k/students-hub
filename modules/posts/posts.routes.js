@@ -9,14 +9,14 @@ const SOCIAL_TAG = {
     all: 'All'
 }
 
-const preHandler = async (request, reply, done) => {
+const preHandler = async (request, reply) => {
     const userToken = request.headers.authorization.replace(BEARER_STRING, '')
     const userId = verify(userToken).id
     if (!userId) reply.code(401).send(createError('Unauthorized'))
 
     request.body = {...request.body, userId}
 
-    done()
+    return reply
 }
 
 const routes = (fastify, opts, done) => {
@@ -149,17 +149,14 @@ const routes = (fastify, opts, done) => {
                 }
             }
         },
-        // preHandler,
+        preHandler,
         handler: async (request, reply) => {
             try {
-                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-                const userId = verify(userToken).id
-
                 const data = await request.file()
 
                 const chunkPhoto = data ? await data?.toBuffer() : ''
 
-                const {body, title, tags} = request.body
+                const {body, title, tags, userId} = request.body
                 const createdPost = await postService.createPost({
                     title,
                     body: [{text: body, image: ""}],
@@ -362,7 +359,7 @@ const routes = (fastify, opts, done) => {
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId, postId, text} = request.body
+                const {postId, text, userId} = request.body
                 await postService.createComment(text, postId, userId)
                 reply.send(createResponse({}))
             } catch (e) {
@@ -493,11 +490,9 @@ const routes = (fastify, opts, done) => {
                 200: {}
             }
         },
-        // preHandler,
+        preHandler,
         handler: async (request, reply) => {
             try {
-                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-                const userId = verify(userToken).id
 
                 const data = await request.file()
 
@@ -506,7 +501,7 @@ const routes = (fastify, opts, done) => {
 
                 const obj = request.body
 
-                const {body, title, tags} = obj
+                const {body, title, tags, userId} = obj
 
                 const id = obj?.id || null
 
