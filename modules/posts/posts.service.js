@@ -128,7 +128,7 @@ class PostsService {
                         SOCIAL_TAG_FILTER,
                         {
                             tags: {
-                                every: {
+                                some: {
                                     tagId: {
                                         in: tagIds
                                     }
