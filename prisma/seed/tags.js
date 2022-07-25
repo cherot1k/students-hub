@@ -2,11 +2,14 @@ const {PrismaClient} = require('@prisma/client')
 const {tag, $disconnect} = new PrismaClient()
 
 const tags = [
-    {id: 1, value: "BLM"},
-    {id: 2, value: "WLM"},
-    {id: 3, value: "Nudes"},
-    {id: 4, value: "Cum"},
-    {id: 5, value: "Noggers"},
+    {id: 1, value: "Sport"},
+    {id: 2, value: "Alchemical"},
+    {id: 3, value: "Organic"},
+    {id: 4, value: "Ride"},
+    {id: 5, value: "Garden"},
+    {id: 6, value: "Math"},
+    {id: 7, value: "Celebrities"},
+    {id: 8, value: "Fights"}
 ]
 
 module.exports = async () => {
