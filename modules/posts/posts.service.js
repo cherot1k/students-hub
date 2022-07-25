@@ -113,7 +113,7 @@ class PostsService {
 
         const FILTER_OBJECT = [
             SOCIAL_TAG_FILTER,
-            // POST_TAGS_FILTER
+            POST_TAGS_FILTER
         ]
 
         try {
@@ -124,7 +124,18 @@ class PostsService {
                     id: 'desc'
                 },
                 where: {
-                    AND: FILTER_OBJECT,
+                    AND: [
+                        SOCIAL_TAG_FILTER,
+                        {
+                            tags: {
+                                every: {
+                                    tagId: {
+                                        in: tagIds
+                                    }
+                                }
+                            }
+                        }
+                    ],
                 },
                 include: {
                     _count:{
@@ -134,11 +145,6 @@ class PostsService {
                     },
                     likes: true,
                     tags: {
-                        where: {
-                            tagId: {
-                                in: tagIds
-                            }
-                        },
                         include: {
                             tag: true
                         }
