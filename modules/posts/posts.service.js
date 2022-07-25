@@ -36,6 +36,8 @@ class PostsService {
             userId
         } = data
 
+        filter = JSON.parse(filter)
+
         socialTag ??= SOCIAL_TAG.all
 
         let SOCIAL_TAG_FILTER;
@@ -92,7 +94,7 @@ class PostsService {
         const relatedTags = await tag.findMany({
             where: {
                 value: {
-                    in: filter?.tags
+                    in: filter?.tags || []
                 }
             }
         })
