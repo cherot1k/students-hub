@@ -390,7 +390,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             try {
                 const {userId, commentId} = request.body
-                await postService.likeComment(commentId, userId)
+                await postService.likeComment({commentId, userId})
                 reply.send(createResponse({}))
             } catch (e) {
                 console.log('error', e)
@@ -420,10 +420,36 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             try {
                 const {userId, commentId} = request.body
-                await postService.unlikeComment(commentId, userId)
+                await postService.unlikeComment({commentId, userId})
                 reply.send(createResponse({}))
             } catch (e) {
                 reply.send(createError(e))
+            }
+        }
+    })
+
+    fastify.route({
+        method: 'POST',
+        url: '/post/comment/toggle-like',
+        schema: {
+            description: 'Toggle comment like',
+            body: {
+                type: 'object',
+                properties: {
+                    isLiked: {type: 'boolean'},
+                    commentId: {type: 'integer'},
+                },
+                required: ['isLiked', 'commentId']
+            }
+        },
+        preHandler,
+        handler: async (request, reply ) => {
+            const { isLiked, commentId, userId } = request.body
+
+            if(isLiked){
+                await postService.likeComment({commentId, userId})
+            }else{
+                await postService.unlikeComment({userId, commentId})
             }
         }
     })
@@ -437,7 +463,8 @@ const routes = (fastify, opts, done) => {
                 properties: {
                     isLiked: {type: 'boolean',},
                     postId: {type: 'integer'}
-                }
+                },
+                required: ['isLiked', 'postId']
             }
         },
         preHandler,
@@ -448,32 +475,6 @@ const routes = (fastify, opts, done) => {
                 await postService.likePost(postId, userId)
             }else {
                 await postService.unlikePost(postId, userId)
-            }
-
-            return reply.send( createResponse(isLiked))
-        }
-    })
-
-    fastify.route({
-        method: 'POST',
-        url: '/post/comment/toggle-like',
-        schema: {
-            body:{
-                type: 'object',
-                properties: {
-                    isLiked: {type: 'boolean',},
-                    commentId: {type: 'integer'}
-                }
-            }
-        },
-        preHandler,
-        handler: async (request, reply, done) => {
-            const {isLiked, postId, userId} = request.body
-
-            if(isLiked){
-                await postService.likeComment(postId, userId)
-            }else {
-                await postService.unlikeComment(postId, userId)
             }
 
             return reply.send( createResponse(isLiked))

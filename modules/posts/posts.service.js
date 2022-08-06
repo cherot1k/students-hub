@@ -103,7 +103,7 @@ class PostsService {
 
         const POST_TAGS_FILTER = {
             tags: {
-                where:{
+                some: {
                     tagId: {
                         in: tagIds
                     }
@@ -113,8 +113,10 @@ class PostsService {
 
         const FILTER_OBJECT = [
             SOCIAL_TAG_FILTER,
-            POST_TAGS_FILTER
+            // POST_TAGS_FILTER
         ]
+
+        if(filter.tags.length) FILTER_OBJECT.push(POST_TAGS_FILTER)
 
         try {
             let data = await post.findMany({
@@ -125,16 +127,7 @@ class PostsService {
                 },
                 where: {
                     AND: [
-                        SOCIAL_TAG_FILTER,
-                        {
-                            tags: {
-                                some: {
-                                    tagId: {
-                                        in: tagIds
-                                    }
-                                }
-                            }
-                        }
+                        ...FILTER_OBJECT
                     ],
                 },
                 include: {
@@ -463,7 +456,7 @@ class PostsService {
         return utils.formatComments(comments)
     }
 
-    async likeComment(commentId, userId) {
+    async likeComment({commentId, userId}) {
         await comment.update({
             where: {
                 id: commentId
@@ -484,7 +477,7 @@ class PostsService {
         })
     }
 
-    async unlikeComment(userId, commentId) {
+    async unlikeComment({userId, commentId}) {
         await likeOnComments.deleteMany({
             where: {
                 commentId,
