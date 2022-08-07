@@ -47,6 +47,7 @@ model Post {
   tags      PostsOnTags[]
   likes     LikeOnPosts[]
   comments  Comment[]
+  deleted   DateTime?
 }
 
 model LikeOnComments{
@@ -71,9 +72,10 @@ model PostChunk {
   id        Int      @id @default(autoincrement())
   image     String
   text      String
-  postId    Int     @unique
+  postId    Int      @unique
   post      Post     @relation(fields: [postId], references: [id])
   createdAt DateTime @default(now()) @db.Timestamp(6)
+  deleted   DateTime?
 }
 
 model Tag {

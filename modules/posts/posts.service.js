@@ -127,7 +127,10 @@ class PostsService {
                 },
                 where: {
                     AND: [
-                        ...FILTER_OBJECT
+                        ...FILTER_OBJECT,
+                        {
+                            deleted: null
+                        }
                     ],
                 },
                 include: {
@@ -364,18 +367,24 @@ class PostsService {
 
     async deletePost({id}) {
         try {
-            const deletePost = await post.delete({
-                where: {
-                    id
-                }
-            })
-            const deleteChunks = await postChunk.deleteMany({
-                where: {
-                    postId: id
-                }
-            })
-
-            return await $transaction([deletePost, deleteChunks])
+            return await prisma.$transaction([
+                post.updateMany({
+                    where: {
+                        id
+                    },
+                    data: {
+                        deleted: new Date()
+                    }
+                }),
+                postChunk.updateMany({
+                    where: {
+                        postId: id
+                    },
+                    data: {
+                        deleted: new Date()
+                    }
+                })
+            ])
         } catch (e) {
             console.log(e)
             throw new Error(e)
