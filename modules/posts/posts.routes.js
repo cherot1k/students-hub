@@ -453,7 +453,7 @@ const routes = (fastify, opts, done) => {
                     await postService.unlikeComment({userId, commentId})
                 }
 
-                reply.send(createResponse({}))
+                reply.send(createResponse(true))
             }catch (e) {
                 console.log('e', e)
                 reply.send(createError(e))
