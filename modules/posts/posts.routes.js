@@ -444,13 +444,21 @@ const routes = (fastify, opts, done) => {
         },
         preHandler,
         handler: async (request, reply ) => {
-            const { isLiked, commentId, userId } = request.body
+            try{
+                const { isLiked, commentId, userId } = request.body
 
-            if(isLiked){
-                await postService.likeComment({commentId, userId})
-            }else{
-                await postService.unlikeComment({userId, commentId})
+                if(isLiked){
+                    await postService.likeComment({commentId, userId})
+                }else{
+                    await postService.unlikeComment({userId, commentId})
+                }
+
+                reply.send(createResponse({}))
+            }catch (e) {
+                console.log('e', e)
+                reply.send(createError(e))
             }
+
         }
     })
 
