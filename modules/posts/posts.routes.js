@@ -331,9 +331,11 @@ const routes = (fastify, opts, done) => {
         schema: {
 
         },
+        preHandler,
         handler: async (request, reply, done) => {
             const {postId} = request.params
-            const res = await postService.getPostComments(postId)
+            const {userId} = request.body
+            const res = await postService.getPostComments(postId, userId)
             reply.send(createResponse(res))
         }
     })

@@ -447,7 +447,7 @@ class PostsService {
         })
     }
 
-    async getPostComments(postId){
+    async getPostComments(postId, userId){
         const comments = await comment.findMany({
             where: {
                 postId: Number(postId)
@@ -462,7 +462,7 @@ class PostsService {
             }
         })
 
-        return utils.formatComments(comments)
+        return utils.formatComments(comments, userId)
     }
 
     async likeComment({commentId, userId}) {
