@@ -1,5 +1,5 @@
 const {PrismaClient} = require('@prisma/client')
-const {tag, $disconnect} = new PrismaClient()
+const {tag} = new PrismaClient()
 
 const tags = [
     {id: 1, value: "Sport"},

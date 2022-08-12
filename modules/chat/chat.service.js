@@ -1,7 +1,7 @@
 const {PrismaClient} = require('@prisma/client')
 const {event, user} = new PrismaClient()
 const DI = require('../../lib/DI')
-class EventService {
+class ChatService {
     async getEvents({filterObject}) {
         try {
             let data = await event.findMany(filterObject)
@@ -154,7 +154,7 @@ class EventService {
 
 module.exports = {
     module: {
-        service: new EventService(),
-        name: 'eventService'
+        service: new ChatService(),
+        name: 'chatService'
     }
 }

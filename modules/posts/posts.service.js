@@ -1,6 +1,7 @@
 const {PrismaClient} = require('@prisma/client')
 const DI = require('../../lib/DI')
 const utils = require('./post.utils')
+const {DbError} = require('../auth/auth.errors')
 
 const DEFAULT_IMAGE_URL = "http://res.cloudinary.com/dts7nyiog/image/upload/v1655124121/users/yylbf1ljyehqigwqaatz.jpg"
 
@@ -426,25 +427,31 @@ class PostsService {
     }
 
     async createComment(text, postId, userId) {
-        await post.update({
-            where: {
-                id: postId
-            },
-            data: {
-                comments: {
-                    create: [
-                        {
-                            text,
-                            user: {
-                                connect: {
-                                    id: userId
+        try{
+            return await post.update({
+                where: {
+                    id: postId
+                },
+                data: {
+                    comments: {
+                        create: [
+                            {
+                                text,
+                                user: {
+                                    connect: {
+                                        id: userId
+                                    }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
-            }
-        })
+            })
+
+        }catch (e) {
+            console.log(e)
+            throw new DbError(`Can't create `)
+        }
     }
 
     async getPostComments(postId, userId){
@@ -466,44 +473,51 @@ class PostsService {
     }
 
     async likeComment({commentId, userId}) {
-        await comment.update({
-            where: {
-                id: commentId
-            },
-            data: {
-                users: {
-                    create: [
-                        {
-                            user: {
-                                connect: {
-                                    id: userId
+        try{
+            return await comment.update({
+                where: {
+                    id: commentId
+                },
+                data: {
+                    users: {
+                        create: [
+                            {
+                                user: {
+                                    connect: {
+                                        id: userId
+                                    }
                                 }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
-            }
-        })
+            })
+        }catch (e) {
+            throw new DbError('Liked record already exists')
+        }
+
     }
 
     async unlikeComment({userId, commentId}) {
-        await likeOnComments.deleteMany({
-            where: {
-                commentId,
-                userId
-            }
-        })
+        try{
+            return await likeOnComments.deleteMany({
+                where: {
+                    commentId,
+                    userId
+                }
+            })
+        }catch (e) {
+            console.log(e)
+            throw new DbError(`Can't delete liked record`)
+        }
+
     }
 
     async createOrUpdatePost({title, body, userId, tags, imageData, id}){
-        try{
-            if(id){
-                return await this.updatePost({id: Number(id), userId, chunks: [{text: body}], chunkPhoto: imageData, title})
-            }else {
-                return await this.createPost({title, body: [{text: body}], userId, tags, bufferImage: imageData})
-            }
-        }catch (e) {
-            console.log(e)
+        if(id){
+            return await this.updatePost({id: Number(id), userId, chunks: [{text: body}], chunkPhoto: imageData, title})
+        }else {
+            return await this.createPost({title, body: [{text: body}], userId, tags, bufferImage: imageData})
         }
     }
 }

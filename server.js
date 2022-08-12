@@ -20,6 +20,9 @@ const registerContextRoutes = (server) => {
 
 try{
   (async () => {
+    fastify.register(require('@fastify/websocket'), {
+      options: { maxPayload: 1048576 }
+    })
     const regRoute = registerContextRoutes(fastify)
 
     fastify.register(require('fastify-multipart'), {

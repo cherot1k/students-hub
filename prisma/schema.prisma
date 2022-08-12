@@ -35,6 +35,8 @@ model User {
   likes             LikeOnPosts[]
   comments          Comment[]
   likedComments     LikeOnComments[]
+  notifications     Notification[]
+  token             String?
 }
 
 model Post {
@@ -152,4 +154,12 @@ model Event {
   status      String
   title       String
   address     String
+}
+
+model Notification {
+  id          Int           @id @default(autoincrement())
+  message     String
+  userId      Int
+  user        User          @relation(fields: [userId], references: [id])
+  read        Boolean       @default(false)
 }
