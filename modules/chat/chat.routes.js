@@ -3,6 +3,7 @@ const {verify} = require("../jwt");
 const {createResponse, createError} = require("../../lib/http");
 const BEARER_STRING = 'Bearer ';
 
+
 const routes = (fastify, opts, done) => {
     // const chatService = DI.injectModule("chatService")
     fastify.route({
@@ -34,7 +35,7 @@ const routes = (fastify, opts, done) => {
         wsHandler: (connection, request) => {
             connection.socket.on('message', message => {
                 // message.toString() === 'hi from client'
-                connection.socket.send('hi from server')
+                connection.socket.send({'name': 'gay'})
             })
         }
     })
