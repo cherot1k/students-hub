@@ -1,144 +1,139 @@
 const {PrismaClient} = require('@prisma/client')
-const {event, user} = new PrismaClient()
+const prisma = new PrismaClient()
+const {user, chat, message} = prisma
+
 const DI = require('../../lib/DI')
-class ChatService {
-    async getEvents({filterObject}) {
-        try {
-            let data = await event.findMany(filterObject)
-            return data
-        } catch (e) {
-            console.log('error', e)
+
+const getMessagesAndSentToSockets = async ({chatRooms, chatId, connections, data, chatViewers}) => {
+    // const chatMessages = await message.findMany({
+    //     where: {
+    //         chatId
+    //     },
+    //     include: {
+    //         user: {
+    //             include: {
+    //                 profile: true
+    //             }
+    //         }
+    //     }
+    // })
+
+    const chatSubscribers = Array.from( chatRooms[chatId].keys())
+
+    chatSubscribers.forEach(el => {
+        const connection = connections.get(el)
+        connection.socket.send(JSON.stringify(data))
+    })
+
+    const chatViewerSubscribers = Array.from( chatViewers[chatId].keys())
+
+    const lastChatVersion = await chat.findUnique({
+        where: {
+            id: chatId
         }
+    })
+
+    chatViewerSubscribers.forEach(el => {
+        const connection = connections.get(el)
+        connection.socket.send(JSON.stringify({
+            type: 'CHAT_UPDATE',
+            data: lastChatVersion
+        }))
+    })
+
+    chatSubscribers.forEach(el => {
+        const connection = connections.get(el)
+        connection.socket.send(JSON.stringify(data))
+    })
+}
+
+class ChatService {
+    async getUserChats({userId}){
+        const userChats = await user.findUnique({
+            where: {
+                id: userId
+            },
+            include: {
+                chats: true
+            }
+        })
+
+        return userChats.chats
     }
 
-    async getEvent({id, userId}) {
-        try {
-            let data = await event.findMany({
-                where: {
-                    id: Number(id),
-                    organizer: {
+    async getChatById(){
+
+    }
+
+    async sendMessage({userId, chatId, chatRooms, connections, data, chatViewers}){
+
+        const createdMessage = await message.create({
+            data: {
+                chat: {
+                    connect: {
+                        id: Number(chatId)
+                    }
+                },
+                user: {
+                    connect: {
                         id: Number(userId)
                     }
+                },
+                message: data.message
+            },
+            include: {
+                user: {
+                    include: {
+                        profile: true
+                    }
                 }
-            })
-            return data?.[0]
-        } catch (e) {
-            console.log('error', e)
-        }
-    }
+            }
+        })
+        await chat.update({
+            where: {
+                id: chatId
+            },
+            data: {
+                last_message: data.message
+            }
+        })
 
-    async createEvent({name, date, organizerId, membersId, status, title, address}) {
-        try {
-            return await event.create({
+        await getMessagesAndSentToSockets(
+            {
+                chatRooms,
+                chatId,
+                connections,
                 data: {
-                    name,
-                    date: new Date(date),
-                    status,
-                    title,
-                    address,
-                    organizer: {
-                        connect: {
-                            id: organizerId
-                        }
-                    },
-                    members: {
-                        create: membersId.map(el => el ? ({
-                            user: {
-                                connect: {
-                                    id: el
-                                }
-                            }
-                        }) : ({user: null}))
-                    },
-                }
-            })
-        } catch (e) {
-            console.log('error', e)
-        }
+                    type: 'NEW_MESSAGE',
+                    data: {message: createdMessage, chatId}
+                },
+                chatViewers
+            }
+        )
     }
 
-    async updateEvent(data, userId) {
-        const notificationService = DI.injectModule('notificationService')
-        const validObject = Object.create(null)
-
-        Object.entries(data).forEach(([key, value]) => {
-            if (value && key !== 'id') validObject[key] = value
-        })
-
-
-        const updatedEvent = await event.updateMany({
+    async editMessage({userId, chatId, chatRooms, connections, data, chatViewers}){
+        const editedMessage = await message.update({
             where: {
-                id: data.id,
-                organizerId: userId
+                userId,
+                chatId,
+                id: data.id
             },
-            data: validObject,
-            select: {
-                members: true,
-                id: true
-            }
-        })
-
-        const userIds = updatedEvent.members.map(el => el.id)
-
-        return await notificationService.sendPushNotifications({userIds, message: `Event ${updatedEvent.id} has been updated, please check out new information`})
-    }
-
-    async deleteEvent({id, userId}) {
-        try {
-            return await event.deleteMany({
-                where: {
-                    id,
-                    organizer: {
-                        id: userId
-                    }
-                }
-            })
-        } catch (e) {
-            console.log(e)
-        }
-    }
-
-    async connectUsersToEvent({eventId, userId}) {
-        return await event.update({
-            where: {id: eventId},
             data: {
-                members: {
-                    create: [
-                        {
-                            user: {
-                                connect: {
-                                    id: userId
-                                }
-                            },
-                        }]
-                }
+                message: data.message
             }
         })
+
+        await getMessagesAndSentToSockets({chatRooms, chatId, connections, chatViewers})
     }
 
-    async disconnectUserFromEvent({eventId, userId}) {
-        return await event.update({
-            where: {id: eventId},
-            data: {
-                members: {
-                    deleteMany: {
-                        userId
-                    }
-                }
-            }
-        })
-    }
-
-    async broadcastMessageToEventSubscribers({userId, eventId, messageData}){
-        const notificationService = DI.injectModule('notificationService')
-
-        const event = await event.find({
+    async getChatMessages({chatId, userId, connection}){
+        const usersChat = await chat.findUnique({
             where: {
-                organizerId: userId,
-                id: eventId
+                id: Number( chatId)
             },
-            select: {
-                members: {
+            include: {
+                users: {
                     select: {
                         id: true
                     }
@@ -146,9 +141,24 @@ class ChatService {
             }
         })
 
-        const userIds = event.members.map(el => el.id)
+        const isInChat = usersChat.users.map(el => el.id).includes(Number(userId))
 
-        return  await notificationService.sendPushNotifications({userIds, message: messageData})
+        if(!isInChat)  throw new Error('403 Not Allowed')
+
+        const messages = await message.findMany({
+            where: {
+                chatId: Number(chatId)
+            },
+            include: {
+                user: {
+                    include: {
+                        profile: true
+                    }
+                }
+            }
+        })
+
+        return messages
     }
 }
 

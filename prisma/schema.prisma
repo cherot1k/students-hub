@@ -20,6 +20,8 @@ model Profile {
   createdAt  DateTime @default(now()) @db.Timestamp(6)
   imageUrl   String
   user       User?
+  updatedAt         DateTime        @updatedAt @default(now())
+
 }
 
 model User {
@@ -27,6 +29,7 @@ model User {
   ticket            String          @unique
   password          String
   createdAt         DateTime        @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime        @updatedAt @default(now())
   profile           Profile         @relation(fields: [profileId], references: [id])
   profileId         Int             @unique
   posts             Post[]
@@ -37,6 +40,8 @@ model User {
   likedComments     LikeOnComments[]
   notifications     Notification[]
   token             String?
+  chats             Chat[]
+  messages          Message[]
 }
 
 model Post {
@@ -50,6 +55,8 @@ model Post {
   likes     LikeOnPosts[]
   comments  Comment[]
   deleted   DateTime?
+  updatedAt DateTime        @updatedAt @default(now())
+
 }
 
 model LikeOnComments{
@@ -85,6 +92,8 @@ model Tag {
   value     String
   posts     PostsOnTags[]
   createdAt DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime        @updatedAt @default(now())
+
 }
 
 model Comment {
@@ -96,6 +105,8 @@ model Comment {
   postId        Int
   post          Post            @relation(fields: [postId], references: [id])
   users         LikeOnComments[]
+  updatedAt         DateTime        @updatedAt @default(now())
+
 }
 
 model PostsOnTags {
@@ -114,6 +125,8 @@ model Group {
   faculty   Faculty   @relation(fields: [facultyId], references: [id])
   facultyId Int
   createdAt DateTime  @default(now()) @db.Timestamp(6)
+  updatedAt DateTime  @updatedAt @default(now())
+
 }
 
 model Faculty {
@@ -124,6 +137,8 @@ model Faculty {
   university   University @relation(fields: [universityId], references: [id])
   universityId Int
   createdAt    DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt    DateTime   @updatedAt @default(now())
+
 }
 
 model University {
@@ -162,4 +177,24 @@ model Notification {
   userId      Int
   user        User          @relation(fields: [userId], references: [id])
   read        Boolean       @default(false)
+}
+
+model Chat{
+  id            Int           @id @default(autoincrement())
+  title         String
+  users         User[]
+  last_message  String
+  messages      Message[]
+  updatedAt     DateTime   @updatedAt @default(now())
+}
+
+model Message{
+  id          Int           @id @default(autoincrement())
+  user        User          @relation(fields: [userId], references: [id])
+  userId      Int
+  message     String
+  createdAt   DateTime      @default(now()) @db.Timestamp(6)
+  chatId      Int
+  chat        Chat          @relation(fields: [chatId], references: [id])
+  updatedAt    DateTime     @updatedAt @default(now())
 }
