@@ -1,9 +1,9 @@
-const {createWorker} = require('tesseract.js')
+const { createWorker } = require('tesseract.js')
 const sharp = require('sharp')
 
 const LANGUAGES = {
     UA: 'ukr',
-    EN: 'eng'
+    EN: 'eng',
 }
 
 const BLOCKS = [
@@ -15,7 +15,7 @@ const BLOCKS = [
             top: 217,
             width: 400,
             height: 80,
-        }
+        },
     },
     {
         name: 'date created',
@@ -25,7 +25,7 @@ const BLOCKS = [
             top: 373,
             width: 400,
             height: 120,
-        }
+        },
     },
     {
         name: 'date of ending',
@@ -35,7 +35,7 @@ const BLOCKS = [
             top: 541,
             width: 400,
             height: 120,
-        }
+        },
     },
     {
         name: 'full_name',
@@ -45,7 +45,7 @@ const BLOCKS = [
             top: 713,
             width: 700,
             height: 120,
-        }
+        },
     },
     {
         name: 'faculty',
@@ -55,7 +55,7 @@ const BLOCKS = [
             top: 913,
             width: 700,
             height: 180,
-        }
+        },
     },
     {
         name: 'university',
@@ -65,14 +65,20 @@ const BLOCKS = [
             top: 10,
             width: 800,
             height: 150,
-        }
-    }
+        },
+    },
 ]
 
 const parseImageData = (imageData) => {
-    let data = Object.create(null)
-    for (let chunk of imageData) {
-        Object.values(chunk).forEach(el => typeof el === 'string' ? el.replace(`\n`, ' ') : el)
+    const data = Object.create(null)
+    for (const chunk of imageData) {
+        Object
+            .values(chunk)
+            .forEach(
+                (el) => typeof el === 'string'
+                    ? el.replace('\n', ' ')
+                    : el,
+            )
         Object.assign(data, chunk)
     }
     return data
@@ -88,11 +94,18 @@ class ImageRecognitionService {
         const values = []
         for (const value of BLOCKS) {
             await worker.initialize(value.language)
-            const {data: {text}} = await worker.recognize(imageData, {rectangle: value.rectangle})
-            values.push({[value.name]: text.replaceAll('\n', ' ')})
+            const { data: { text } } =
+                await worker.recognize(
+                    imageData,
+                    { rectangle: value.rectangle },
+                )
+            values.push({ [value.name]: text.replaceAll('\n', ' ') })
         }
-        const userImage = await sharp(imageData).extract({width: 377, height: 467, top: 194, left: 389}).toBuffer()
-        values.push({userImage})
+        const userImage =
+            await sharp(imageData)
+                .extract({ width: 377, height: 467, top: 194, left: 389 })
+                .toBuffer()
+        values.push({ userImage })
         await worker.terminate()
         return parseImageData(values)
     }
@@ -101,8 +114,8 @@ class ImageRecognitionService {
 module.exports = {
     module: {
         service: new ImageRecognitionService(),
-        name: 'imageRecognition'
-    }
+        name: 'imageRecognition',
+    },
 }
 
 

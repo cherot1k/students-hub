@@ -1,4 +1,6 @@
-module.exports = (fastify, opts, done) => {
+'use strict'
+// module.exports = (fastify, opts, done) => {
+module.exports = () => {
     // fastify.addSchema({
     //     $id: 'event',
     //     type: 'object',

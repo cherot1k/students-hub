@@ -1,25 +1,25 @@
-const {PrismaClient} = require('@prisma/client')
-const {event, user} = new PrismaClient()
+'use strict'
+const { PrismaClient } = require('@prisma/client')
+const { event, user } = new PrismaClient()
 const DI = require('../../lib/DI')
 class EventService {
-    async getEvents({filterObject}) {
+    async getEvents({ filterObject }) {
         try {
-            let data = await event.findMany(filterObject)
-            return data
+            return await event.findMany(filterObject)
         } catch (e) {
             console.log('error', e)
         }
     }
 
-    async getEvent({id, userId}) {
+    async getEvent({ id, userId }) {
         try {
-            let data = await event.findMany({
+            const data = await event.findMany({
                 where: {
                     id: Number(id),
                     organizer: {
-                        id: Number(userId)
-                    }
-                }
+                        id: Number(userId),
+                    },
+                },
             })
             return data?.[0]
         } catch (e) {
@@ -27,7 +27,15 @@ class EventService {
         }
     }
 
-    async createEvent({name, date, organizerId, membersId, status, title, address}) {
+    async createEvent({
+        name,
+        date,
+        organizerId,
+        membersId,
+        status,
+        title,
+        address,
+    }) {
         try {
             return await event.create({
                 data: {
@@ -38,19 +46,19 @@ class EventService {
                     address,
                     organizer: {
                         connect: {
-                            id: organizerId
-                        }
+                            id: organizerId,
+                        },
                     },
                     members: {
-                        create: membersId.map(el => el ? ({
+                        create: membersId.map((el) => el ? {
                             user: {
                                 connect: {
-                                    id: el
-                                }
-                            }
-                        }) : ({user: null}))
+                                    id: el,
+                                },
+                            },
+                        } : { user: null }),
                     },
-                }
+                },
             })
         } catch (e) {
             console.log('error', e)
@@ -69,92 +77,102 @@ class EventService {
         const updatedEvent = await event.updateMany({
             where: {
                 id: data.id,
-                organizerId: userId
+                organizerId: userId,
             },
             data: validObject,
             select: {
                 members: true,
-                id: true
-            }
+                id: true,
+            },
         })
 
-        const userIds = updatedEvent.members.map(el => el.id)
+        const userIds = updatedEvent.members.map((el) => el.id)
 
-        return await notificationService.sendPushNotifications({userIds, message: `Event ${updatedEvent.id} has been updated, please check out new information`})
+        return await notificationService
+            .sendPushNotifications({
+                userIds,
+                message:
+                    `Event ${updatedEvent.id} has been updated,` +
+                    'please check out new information',
+            })
     }
 
-    async deleteEvent({id, userId}) {
+    async deleteEvent({ id, userId }) {
         try {
             return await event.deleteMany({
                 where: {
                     id,
                     organizer: {
-                        id: userId
-                    }
-                }
+                        id: userId,
+                    },
+                },
             })
         } catch (e) {
             console.log(e)
         }
     }
 
-    async connectUsersToEvent({eventId, userId}) {
+    async connectUsersToEvent({ eventId, userId }) {
         return await event.update({
-            where: {id: eventId},
+            where: { id: eventId },
             data: {
                 members: {
                     create: [
                         {
                             user: {
                                 connect: {
-                                    id: userId
-                                }
+                                    id: userId,
+                                },
                             },
-                        }]
-                }
-            }
+                        }],
+                },
+            },
         })
     }
 
-    async disconnectUserFromEvent({eventId, userId}) {
+    async disconnectUserFromEvent({ eventId, userId }) {
         return await event.update({
-            where: {id: eventId},
+            where: { id: eventId },
             data: {
                 members: {
                     deleteMany: {
-                        userId
-                    }
-                }
-            }
+                        userId,
+                    },
+                },
+            },
         })
     }
 
-    async broadcastMessageToEventSubscribers({userId, eventId, messageData}){
+    async broadcastMessageToEventSubscribers({ userId, eventId, messageData }) {
         const notificationService = DI.injectModule('notificationService')
 
-        const event = await event.find({
+        const events = await event.find({
             where: {
                 organizerId: userId,
-                id: eventId
+                id: eventId,
             },
             select: {
                 members: {
                     select: {
-                        id: true
-                    }
-                }
-            }
+                        id: true,
+                    },
+                },
+            },
         })
 
-        const userIds = event.members.map(el => el.id)
+        const userIds = event.members.map((el) => el.id)
 
-        return  await notificationService.sendPushNotifications({userIds, message: messageData})
+        return await notificationService
+            .sendPushNotifications({
+                userIds,
+                message: messageData,
+            })
     }
 }
 
 module.exports = {
     module: {
         service: new EventService(),
-        name: 'eventService'
-    }
+        name: 'eventService',
+    },
 }

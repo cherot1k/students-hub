@@ -1,12 +1,13 @@
-const {PrismaClient} = require('@prisma/client')
-const {user} = new PrismaClient()
+'use strict'
+const { PrismaClient } = require('@prisma/client')
+const { user } = new PrismaClient()
 
 class UserService {
     async getUserById(id) {
         try {
-            let data = await user.findUnique({
+            const data = await user.findUnique({
                 where: {
-                    id
+                    id,
                 },
                 include: {
                     profile: {
@@ -15,14 +16,14 @@ class UserService {
                                 include: {
                                     faculty: {
                                         include: {
-                                            university: true
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                                            university: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
             })
             return data
         } catch (e) {
@@ -35,6 +36,6 @@ class UserService {
 module.exports = {
     module: {
         service: new UserService(),
-        name: 'userService'
-    }
+        name: 'userService',
+    },
 }

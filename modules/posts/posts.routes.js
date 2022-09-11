@@ -1,12 +1,13 @@
+'use strict'
 const DI = require('../../lib/DI')
-const {verify} = require('../jwt')
-const {createResponse, createError} = require('../../lib/http')
+const { verify } = require('../jwt')
+const { createResponse, createError } = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 
 const SOCIAL_TAG = {
     me: 'Mine',
     university: 'My university',
-    all: 'All'
+    all: 'All',
 }
 
 const preHandler = (request, reply, done) => {
@@ -14,7 +15,7 @@ const preHandler = (request, reply, done) => {
     const userId = verify(userToken).id
     if (!userId) reply.code(401).send(createError('Unauthorized'))
 
-    request.body = {...request.body, userId}
+    request.body = { ...request.body, userId }
 
     done()
 }
@@ -31,17 +32,20 @@ const routes = (fastify, opts, done) => {
             querystring: {
                 type: 'object',
                 properties: {
-                    take: {type: 'integer'},
-                    skip: {type: 'integer'},
-                    order: {type: 'string', enum: ['asc', 'desc']},
-                    sort: {type: 'string'},
+                    take: { type: 'integer' },
+                    skip: { type: 'integer' },
+                    order: { type: 'string', enum: ['asc', 'desc'] },
+                    sort: { type: 'string' },
                     tags: {
                         type: 'array',
                         items: {
-                            type: 'integer'
-                        }
+                            type: 'integer',
+                        },
                     },
-                    socialTag: {type: 'string', enum: Object.values(SOCIAL_TAG)}
+                    socialTag: {
+                        type: 'string',
+                        enum: Object.values(SOCIAL_TAG),
+                    },
                     // filter: {
                     //     type: 'object',
                     //     properties: {
@@ -50,27 +54,27 @@ const routes = (fastify, opts, done) => {
                     //     },
                     // }
                 },
-                required: ['take', 'skip', 'order', 'sort']
+                required: ['take', 'skip', 'order', 'sort'],
             },
             response: {
                 200: {
-                    $ref: 'posts'
-                }
-            }
+                    $ref: 'posts',
+                },
+            },
         },
         preHandler,
         handler: async (request, reply) => {
-            const {take, skip, filter, socialTag} = request.query
-            const {userId} = request.body
+            const { take, skip, filter, socialTag } = request.query
+            const { userId } = request.body
 
             const data = {
                 take: Number(take),
                 skip: Number(skip),
-                sort : 'id',
+                sort: 'id',
                 order: 'desc',
                 filter,
                 socialTag,
-                userId
+                userId,
             }
 
             try {
@@ -80,7 +84,7 @@ const routes = (fastify, opts, done) => {
                 console.log(e)
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -91,21 +95,26 @@ const routes = (fastify, opts, done) => {
             tags: ['Posts'],
             response: {
                 200: {
-                    $ref: 'post'
-                }
-            }
+                    $ref: 'post',
+                },
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId} = request.body
-                const {postId} = request.params
-                const post = await postService.getPost({id: Number(postId), userId: Number(userId)})
+                const { userId } = request.body
+                const { postId } = request.params
+                const post =
+                    await postService.getPost(
+                        {
+                            id: Number(postId),
+                            userId: Number(userId),
+                        })
                 reply.send(createResponse(post))
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -115,23 +124,29 @@ const routes = (fastify, opts, done) => {
             description: 'Get post',
             tags: ['Posts'],
             body: {
-                $ref: 'getPosts'
+                $ref: 'getPosts',
             },
             response: {
                 200: {
-                    $ref: 'post'
-                }
-            }
+                    $ref: 'post',
+                },
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId} = request.body
-                reply.send(createResponse(await postService.getMyPosts({userId: Number(userId)})))
+                const { userId } = request.body
+                reply.send(
+                    createResponse(
+                        await postService.getMyPosts({
+                            userId: Number(userId),
+                        }),
+                    ),
+                )
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -145,31 +160,32 @@ const routes = (fastify, opts, done) => {
             // },
             response: {
                 200: {
-                    $ref: 'post'
-                }
-            }
+                    $ref: 'post',
+                },
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const data = await request.file()
 
-                const chunkPhoto = data ? await data?.toBuffer() : ''
+                const { body, title, tags, userId, file} = request.body
 
-                const {body, title, tags, userId} = request.body
+                const data = file[0]
+                const chunkPhoto = data ? await data?.data : ''
+
                 const createdPost = await postService.createPost({
                     title,
-                    body: [{text: body, image: ""}],
+                    body: [{ text: body, image: '' }],
                     userId,
                     tags: JSON.parse(tags),
-                    bufferImage: chunkPhoto
+                    bufferImage: chunkPhoto,
                 })
-                reply.send(createResponse({createdPost}))
+                reply.send(createResponse({ createdPost }))
             } catch (e) {
                 console.log('e', e)
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -179,36 +195,37 @@ const routes = (fastify, opts, done) => {
             description: 'Update post',
             tags: ['Posts'],
             body: {
-                $ref: 'updatePost'
+                $ref: 'updatePost',
             },
             response: {
                 200: {
-                    $ref: 'post'
-                }
-            }
+                    $ref: 'post',
+                },
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId} = request.body
-                const data = await request.file()
+                const { userId } = request.body
 
-                const chunkPhoto = data ? await data.toBuffer() : ''
 
-                const {body, title, tags} = Object.values(data.fields).reduce((prev, curr) => {
-                    return {...prev, [curr.fieldname]: curr.value}
-                }, Object.create(null))
+                const { body, title, id, file } = request.body
+
+                const data = file[0]
+
+                const chunkPhoto = data ? data.data : ''
+
                 reply.send(createResponse(await postService.updatePost({
                     id,
                     title,
                     userId,
-                    chunks: [{title: body}],
-                    chunkPhoto
+                    chunks: [{ title: body }],
+                    chunkPhoto,
                 })))
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -221,25 +238,25 @@ const routes = (fastify, opts, done) => {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'integer'
-                    }
+                        type: 'integer',
+                    },
                 },
-                required: ['id']
+                required: ['id'],
             },
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {id} = request.query
-                await postService.deletePost({id})
+                const { id } = request.query
+                await postService.deletePost({ id })
                 reply.send(createResponse({}))
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -252,10 +269,10 @@ const routes = (fastify, opts, done) => {
                     type: 'object',
                     properties: {
                         id: 'number',
-                        value: 'string'
-                    }
-                }
-            }
+                        value: 'string',
+                    },
+                },
+            },
         },
         handler: async (request, reply) => {
             try {
@@ -263,7 +280,7 @@ const routes = (fastify, opts, done) => {
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -275,25 +292,25 @@ const routes = (fastify, opts, done) => {
             body: {
                 type: 'object',
                 properties: {
-                    postId: {type: 'integer'},
+                    postId: { type: 'integer' },
                 },
-                required: ['postId']
+                required: ['postId'],
             },
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId, postId} = request.body
+                const { userId, postId } = request.body
                 await postService.likePost(postId, userId)
                 reply.send(createResponse({}))
             } catch (e) {
                 console.log(e)
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -305,24 +322,24 @@ const routes = (fastify, opts, done) => {
             body: {
                 type: 'object',
                 properties: {
-                    postId: {type: 'integer'},
+                    postId: { type: 'integer' },
                 },
-                required: ['postId']
+                required: ['postId'],
             },
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId, postId} = request.body
+                const { userId, postId } = request.body
                 await postService.unlikePost(postId, userId)
                 reply.send(createResponse({}))
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -332,12 +349,12 @@ const routes = (fastify, opts, done) => {
 
         },
         preHandler,
-        handler: async (request, reply, done) => {
-            const {postId} = request.params
-            const {userId} = request.body
+        handler: async (request, reply) => {
+            const { postId } = request.params
+            const { userId } = request.body
             const res = await postService.getPostComments(postId, userId)
             reply.send(createResponse(res))
-        }
+        },
     })
 
     fastify.route({
@@ -349,26 +366,26 @@ const routes = (fastify, opts, done) => {
             body: {
                 type: 'object',
                 properties: {
-                    postId: {type: 'integer'},
-                    text: {type: 'string'}
+                    postId: { type: 'integer' },
+                    text: { type: 'string' },
                 },
-                required: ['postId', 'text']
+                required: ['postId', 'text'],
             },
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {postId, text, userId} = request.body
+                const { postId, text, userId } = request.body
                 await postService.createComment(text, postId, userId)
                 reply.send(createResponse({}))
             } catch (e) {
                 console.log('error', e)
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -380,25 +397,25 @@ const routes = (fastify, opts, done) => {
             body: {
                 type: 'object',
                 properties: {
-                    commentId: {type: 'integer'},
+                    commentId: { type: 'integer' },
                 },
-                required: ['commentId']
+                required: ['commentId'],
             },
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId, commentId} = request.body
-                await postService.likeComment({commentId, userId})
+                const { userId, commentId } = request.body
+                await postService.likeComment({ commentId, userId })
                 reply.send(createResponse({}))
             } catch (e) {
                 console.log('error', e)
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -410,24 +427,24 @@ const routes = (fastify, opts, done) => {
             body: {
                 type: 'object',
                 properties: {
-                    commentId: {type: 'integer'},
+                    commentId: { type: 'integer' },
                 },
-                required: ['commentId']
+                required: ['commentId'],
             },
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         preHandler,
         handler: async (request, reply) => {
             try {
-                const {userId, commentId} = request.body
-                await postService.unlikeComment({commentId, userId})
+                const { userId, commentId } = request.body
+                await postService.unlikeComment({ commentId, userId })
                 reply.send(createResponse({}))
             } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
@@ -438,57 +455,57 @@ const routes = (fastify, opts, done) => {
             body: {
                 type: 'object',
                 properties: {
-                    isLiked: {type: 'boolean'},
-                    commentId: {type: 'integer'},
+                    isLiked: { type: 'boolean' },
+                    commentId: { type: 'integer' },
                 },
-                required: ['isLiked', 'commentId']
-            }
+                required: ['isLiked', 'commentId'],
+            },
         },
         preHandler,
-        handler: async (request, reply ) => {
-            try{
+        handler: async (request, reply) => {
+            try {
                 const { isLiked, commentId, userId } = request.body
 
-                if(isLiked){
-                    await postService.likeComment({commentId, userId})
-                }else{
-                    await postService.unlikeComment({userId, commentId})
+                if (isLiked) {
+                    await postService.likeComment({ commentId, userId })
+                } else {
+                    await postService.unlikeComment({ userId, commentId })
                 }
 
                 reply.send(createResponse(true))
-            }catch (e) {
+            } catch (e) {
                 console.log('e', e)
                 reply.send(createError(e))
             }
 
-        }
+        },
     })
 
     fastify.route({
         method: 'POST',
         url: '/post/toggle-like',
         schema: {
-            body:{
+            body: {
                 type: 'object',
                 properties: {
-                    isLiked: {type: 'boolean',},
-                    postId: {type: 'integer'}
+                    isLiked: { type: 'boolean' },
+                    postId: { type: 'integer' },
                 },
-                required: ['isLiked', 'postId']
-            }
+                required: ['isLiked', 'postId'],
+            },
         },
         preHandler,
-        handler: async (request, reply, done) => {
-            const {isLiked, postId, userId} = request.body
+        handler: async (request, reply) => {
+            const { isLiked, postId, userId } = request.body
 
-            if(isLiked){
+            if (isLiked) {
                 await postService.likePost(postId, userId)
-            }else {
+            } else {
                 await postService.unlikePost(postId, userId)
             }
 
-            return reply.send( createResponse(isLiked))
-        }
+            return reply.send(createResponse(isLiked))
+        },
     })
 
     fastify.route({
@@ -498,22 +515,26 @@ const routes = (fastify, opts, done) => {
             description: 'Upsert post',
             tags: ['Posts'],
             response: {
-                200: {}
-            }
+                200: {},
+            },
         },
         // preHandler,
         handler: async (request, reply) => {
             try {
-                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+                const userToken =
+                    request.headers.authorization.replace(
+                        BEARER_STRING,
+                        '',
+                    )
                 const userId = verify(userToken).id
                 // const data = await request.file()
 
                 const buffer = await request.body?.file?.[0]?.data || ''
-                const chunkPhoto = buffer?.length > 0? buffer : null
+                const chunkPhoto = buffer?.length > 0 ? buffer : null
 
-                const {body, title, tags} = request.body
+                const { body, title, tags } = request.body
 
-                const id = request.body.id === "null"? null : request.body.id
+                const id = request.body.id === 'null' ? null : request.body.id
 
                 const res = await postService.createOrUpdatePost({
                     title,
@@ -529,7 +550,7 @@ const routes = (fastify, opts, done) => {
                 console.log('e', e)
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
     done()
@@ -540,6 +561,6 @@ const prefix = '/posts'
 module.exports = {
     data: {
         routes,
-        prefix
-    }
+        prefix,
+    },
 }

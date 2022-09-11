@@ -1,112 +1,122 @@
 const DI = require('../../lib/DI')
-const {createResponse, createError} = require("../../lib/http");
+const { createResponse, createError } = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 
 const routes =  (fastify, opts, done) => {
     // fastify.decorateRequest('ans', 42)
 
     fastify.route({
-        method: "POST",
+        method: 'POST',
         url: '/login',
         schema: {
-            description: "Login",
+            description: 'Login',
             tags: ['Auth, User'],
             summary: '',
-            body:{
-                $ref: 'login'
+            body: {
+                $ref: 'login',
             },
-            response:{
+            response: {
                 200: {
                     token: {
-                        type: 'string'
-                    }
-                }
-            }
+                        type: 'string',
+                    },
+                },
+            },
         },
         handler:  async (request, reply) => {
-          try{
-            const userService = DI.injectModule('authService')
-            const {ticket, password} = request.body;
-            const token = await userService.loginUser({ticket, password})
-            if(!token) reply.code(401).send()
-            reply.send(createResponse({token}))
-          }catch (e){
-               reply.send(e)
-          }
-        }
+            try {
+                const userService = DI.injectModule('authService')
+                const { ticket, password } = request.body
+                const token = await userService.loginUser({ ticket, password })
+                if (!token) reply.code(401).send()
+                reply.send(createResponse({ token }))
+            } catch (e) {
+                reply.send(e)
+            }
+        },
     })
 
     fastify.route({
         method: 'POST',
         url: '/registration',
-        schema:{
-            description: "Registerate",
+        schema: {
+            description: 'Registerate',
             tags: ['Auth, User'],
             summary: '',
             // body:{
-                // $ref: 'registration'
+            // $ref: 'registration'
             // },
             response: {
                 200: {
                     token: {
-                        type: 'string'
-                    }
-                }
-            }
-        },handler: async (request, reply) => {
+                        type: 'string',
+                    },
+                },
+            },
+        }, handler: async (request, reply) => {
             try {
-                const data = await request.file()
-                const {password, group, email} = Object.values(data.fields).reduce((prev, curr) => {
-                    return {...prev, [curr.fieldname]: curr.value}
-                },Object.create(null))
-                const ticketPhoto = await data.toBuffer()
+
+                const { password, group, email, file } = request.body
+
+                const data = file[0]
+
+                const ticketPhoto = await data.data
                 const userService = DI.injectModule('authService')
-                const token = await userService.createUserWithProfile({ticketPhoto, password, email, group})
-                reply.send(createResponse( {token}))
-            }catch (e){
+                const token = await userService.createUserWithProfile({
+                    ticketPhoto,
+                    password,
+                    email,
+                    group,
+                })
+                reply.send(createResponse({ token }))
+            } catch (e) {
                 console.log('e', e)
-              reply.send(createError(e))
+                reply.send(createError(e))
             }
-        }
+        },
     })
 
     fastify.route({
         method: 'POST',
         url: '/verify',
-        schema:{
-            description: "Verify",
+        schema: {
+            description: 'Verify',
             tags: ['Auth, User'],
             summary: '',
-            response:{
-                200:{
-                    description: "Response",
+            response: {
+                200: {
+                    description: 'Response',
                     type: 'object',
                     properties: {
                         verified: {
-                            type: 'boolean'
-                        }
-                    }
-                }
-            }
+                            type: 'boolean',
+                        },
+                    },
+                },
+            },
         },
         handler: async (request, reply) => {
-            try{
-                const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+            try {
+                const userToken =
+                    request.headers.authorization.replace(
+                        BEARER_STRING,
+                        '',
+                    )
                 const userService = DI.injectModule('authService')
                 const isValid = await userService.verify(userToken)
-                reply.send(createResponse({verified: !!isValid}))
-            }catch (e){
+                reply.send(createResponse({ verified: !!isValid }))
+            } catch (e) {
                 reply.send(createError(e))
             }
-        }
+        },
     })
 
-    done();
+    done()
 }
 
 module.exports = {
     data: {
         routes,
-        prefix: '/auth'
-    }
+        prefix: '/auth',
+    },
 }

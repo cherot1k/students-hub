@@ -1,16 +1,17 @@
-const {request} = require('undici')
+'use strict'
+const { request } = require('undici')
 
 const BASE_URL = `${process.env.HOST}:${process.env.PORT}`
 const GET_TAGS_ROUTE = '/posts/tags'
 
 class GlobalService {
     async getInitAppData() {
-        try{
-            const {body: tagsBody, statusCode} = await request(
+        try {
+            const { body: tagsBody } = await request(
                 `${BASE_URL}${GET_TAGS_ROUTE}`,
                 {
-                    method: 'GET'
-                }
+                    method: 'GET',
+                },
             )
 
             const data = await tagsBody.json()
@@ -19,10 +20,10 @@ class GlobalService {
 
             return {
                 formValues: {
-                    postTags: tags
-                }
+                    postTags: tags,
+                },
             }
-        }catch (e) {
+        } catch (e) {
             console.log('err', e)
         }
     }
@@ -31,6 +32,6 @@ class GlobalService {
 module.exports = {
     module: {
         service: new GlobalService(),
-        name: 'globalService'
-    }
+        name: 'globalService',
+    },
 }

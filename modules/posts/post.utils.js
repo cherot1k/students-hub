@@ -1,40 +1,48 @@
+'use strict'
 const deepClone = require('lodash.clonedeep')
 
 const TYPES = {
     single: 'single',
-    multiple: 'multiple'
+    multiple: 'multiple',
 }
 
-const formatComments = (comments, userId) => {
-    return comments.map(el => ({
-        comment: el.text,
-        id: el.id,
-        username: `${el?.user?.profile?.first_name} ${el?.user?.profile?.last_name}`,
-        profilePictureUrl: el?.user?.profile?.imageUrl,
-        timeStamp: el?.createdAt,
-        likeCount: el?.users?.length || 0,
-        isLiked: !!el?.users?.find(el => el.userId === userId)
-    }))
-}
+const formatComments = (comments, userId) => comments.map((el) => ({
+    comment: el.text,
+    id: el.id,
+    username:
+        `${el?.user?.profile?.first_name} ${el?.user?.profile?.last_name}`,
+    profilePictureUrl: el?.user?.profile?.imageUrl,
+    timeStamp: el?.createdAt,
+    likeCount: el?.users?.length || 0,
+    isLiked: !!el?.users?.find((el) => el.userId === userId),
+}))
 
 module.exports = {
     TYPES,
-    formatSinglePost: ({post, chunks, likeCount, isLiked, tags, comments, userId}) => {
+    formatSinglePost: ({
+        post,
+        chunks,
+        likeCount,
+        isLiked,
+        tags,
+        comments,
+        userId,
+    }) => {
 
         const user = deepClone(post.user)
         delete post.user
 
         const chunk = chunks[0]
 
-        if(chunk){
+        if (chunk) {
             post = {
                 ...post,
                 image: chunk.image,
-                text: chunk.text
+                text: chunk.text,
             }
         }
 
-        post.tags = tags?.map(el => el.tag.value)
+        post.tags = tags?.map((el) => el.tag.value)
 
         post.likesCount = likeCount
 
@@ -52,8 +60,7 @@ module.exports = {
     },
 
     formatMultiple: (postArray, userId) => {
-        const formattedArray = postArray.map(el => {
-            let formattedObject;
+        const formattedArray = postArray.map((el) => {
 
             const chunk = el.chunks?.[0]
             const userProfile = el?.user?.profile
@@ -61,26 +68,25 @@ module.exports = {
             const countValues = el?._count
             const likes = el.likes
 
-            formattedObject = {
+            return {
                 text: chunk?.text,
                 image: chunk?.image,
                 profilePictureUrl: userProfile?.imageUrl,
                 username: `${userProfile.first_name + userProfile.last_name}`,
                 likesCount: likes.length,
-                isLiked: !!(likes.find(el => el.userId === user.id)),
+                isLiked: !!likes.find((el) => el.userId === user.id),
                 commentsCount: countValues.comments,
                 title: el.title,
                 id: el.id,
                 createdAt: el.createdAt,
                 authorId: user?.id,
-                tags: el.tags?.map(el => el?.tag?.value),
-                isOwnPost: userId === user?.id
+                tags: el.tags?.map((el) => el?.tag?.value),
+                isOwnPost: userId === user?.id,
             }
-            return formattedObject
         })
 
         return formattedArray
 
     },
-    formatComments
+    formatComments,
 }

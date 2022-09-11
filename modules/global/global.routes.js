@@ -1,4 +1,5 @@
-const {createResponse, createError} = require('../../lib/http')
+'use strict'
+const { createResponse, createError } = require('../../lib/http')
 const DI = require('../../lib/DI')
 
 const routes = (fastify, opts, done) => {
@@ -14,12 +15,12 @@ const routes = (fastify, opts, done) => {
                         postTags: {
                             type: 'array',
                             items: {
-                                type: 'string'
-                            }
-                        }
-                    }
-                }
-            }
+                                type: 'string',
+                            },
+                        },
+                    },
+                },
+            },
         },
         handler: async (request, reply) => {
             try {
@@ -27,7 +28,7 @@ const routes = (fastify, opts, done) => {
             } catch (e) {
                 reply.send(createError('Can\'t get data'))
             }
-        }
+        },
     })
 
     done()
@@ -39,6 +40,6 @@ const prefix = '/global'
 module.exports = {
     data: {
         routes,
-        prefix
-    }
+        prefix,
+    },
 }

@@ -1,10 +1,11 @@
+'use strict'
 const clodinary = require('cloudinary').v2
 clodinary.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,
-    api_secret: process.env.API_SECRET
+    api_secret: process.env.API_SECRET,
 })
-const {Readable} = require('node:stream')
+const { Readable } = require('node:stream')
 require('dotenv').config()
 
 class ImageStorageService {
@@ -23,7 +24,7 @@ class ImageStorageService {
                     } else {
                         console.log(err)
                     }
-                }
+                },
             )
 
             imgDataStream.pipe(stream).on('end', () => {
@@ -39,6 +40,6 @@ class ImageStorageService {
 module.exports = {
     module: {
         service: new ImageStorageService(),
-        name: 'imageStorage'
-    }
+        name: 'imageStorage',
+    },
 }

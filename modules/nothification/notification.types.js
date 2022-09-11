@@ -1,8 +1,9 @@
+'use strict'
 const NOTIFICATION_TYPES = {
-    INTERNAL : 'INTERNAL',
-    PUSH : 'PUSH'
+    INTERNAL: 'INTERNAL',
+    PUSH: 'PUSH',
 }
 
 module.exports = {
-    NOTIFICATION_TYPES
+    NOTIFICATION_TYPES,
 }

@@ -1,101 +1,105 @@
-const {PrismaClient} = require('@prisma/client')
-const prisma = new PrismaClient()
-const {user, chat, message} = prisma
-
+'use strict'
+const { PrismaClient } = require('@prisma/client')
 const DI = require('../../lib/DI')
+const { formatChat, formatChats, formatChatMessages } = require('./chat.utils')
+const prisma = new PrismaClient()
+const { user, chat, message, userReadMessage } = prisma
 
-const getMessagesAndSentToSockets = async ({chatRooms, chatId, connections, data, chatViewers}) => {
-    // const chatMessages = await message.findMany({
-    //     where: {
-    //         chatId
-    //     },
-    //     include: {
-    //         user: {
-    //             include: {
-    //                 profile: true
-    //             }
-    //         }
-    //     }
-    // })
+const DEFAULT_IMAGE_URL = 'http://res.cloudinary.com/dts7nyiog/image/upload/v1655124121/users/yylbf1ljyehqigwqaatz.jpg'
+// const DI = require('../../lib/DI')
 
-    const chatSubscribers = Array.from( chatRooms[chatId].keys())
+const getMessagesAndSentToSockets = async ({ chatRooms, chatId, connections, data, chatViewers }) => {
 
-    chatSubscribers.forEach(el => {
+    const chatSubscribers = Array.from(chatRooms[chatId].keys())
+
+    chatSubscribers.forEach((el) => {
         const connection = connections.get(el)
         connection.socket.send(JSON.stringify(data))
     })
 
-    const chatViewerSubscribers = Array.from( chatViewers[chatId].keys())
+    const chatViewerSubscribers = Array.from(chatViewers[chatId].keys())
 
     const lastChatVersion = await chat.findUnique({
         where: {
-            id: chatId
-        }
+            id: chatId,
+        },
     })
 
-    chatViewerSubscribers.forEach(el => {
+    chatViewerSubscribers.forEach((el) => {
         const connection = connections.get(el)
         connection.socket.send(JSON.stringify({
             type: 'CHAT_UPDATE',
-            data: lastChatVersion
+            data: lastChatVersion,
         }))
     })
 
-    chatSubscribers.forEach(el => {
+    chatSubscribers.forEach((el) => {
         const connection = connections.get(el)
         connection.socket.send(JSON.stringify(data))
     })
 }
 
 class ChatService {
-    async getUserChats({userId}){
+    async getUserChats({ userId }) {
         const userChats = await user.findUnique({
             where: {
-                id: userId
+                id: userId,
             },
             include: {
-                chats: true
-            }
+                chats: {
+                    include: {
+                        users: {
+                            include: {
+                                profile: true
+                            }
+                        },
+                        roles: true
+                    }
+                },
+
+            },
         })
 
-        return userChats.chats
+        return formatChats( userChats.chats, userId)
     }
 
-    async getChatById(){
+    async getChatById() {
 
     }
 
-    async sendMessage({userId, chatId, chatRooms, connections, data, chatViewers}){
+    async sendMessage(
+        { userId, chatId, chatRooms, connections, data, chatViewers },
+    ) {
 
         const createdMessage = await message.create({
             data: {
                 chat: {
                     connect: {
-                        id: Number(chatId)
-                    }
+                        id: Number(chatId),
+                    },
                 },
                 user: {
                     connect: {
-                        id: Number(userId)
-                    }
+                        id: Number(userId),
+                    },
                 },
-                message: data.message
+                message: data.message,
             },
             include: {
                 user: {
                     include: {
-                        profile: true
-                    }
-                }
-            }
+                        profile: true,
+                    },
+                },
+            },
         })
         await chat.update({
             where: {
-                id: chatId
+                id: chatId,
             },
             data: {
-                last_message: data.message
-            }
+                last_message: data.message,
+            },
         })
 
         await getMessagesAndSentToSockets(
@@ -105,66 +109,104 @@ class ChatService {
                 connections,
                 data: {
                     type: 'NEW_MESSAGE',
-                    data: {message: createdMessage, chatId}
+                    data: { message: createdMessage, chatId },
                 },
-                chatViewers
-            }
+                chatViewers,
+            },
         )
     }
 
-    async editMessage({userId, chatId, chatRooms, connections, data, chatViewers}){
+    async editMessage({ userId, chatId, chatRooms, connections, data, chatViewers }) {
         const editedMessage = await message.update({
             where: {
                 userId,
                 chatId,
-                id: data.id
+                id: data.id,
             },
             data: {
-                message: data.message
-            }
+                message: data.message,
+            },
         })
 
-        await getMessagesAndSentToSockets({chatRooms, chatId, connections, chatViewers})
+        await getMessagesAndSentToSockets({ chatRooms, chatId, connections, chatViewers })
     }
 
-    async getChatMessages({chatId, userId, connection}){
+    async getChatMessages({ chatId, userId }) {
         const usersChat = await chat.findUnique({
             where: {
-                id: Number( chatId)
+                id: Number(chatId),
             },
             include: {
                 users: {
                     select: {
-                        id: true
-                    }
-                }
-            }
+                        id: true,
+                    },
+                },
+            },
         })
 
-        const isInChat = usersChat.users.map(el => el.id).includes(Number(userId))
+        const isInChat = usersChat.users.map((el) => el.id).includes(Number(userId))
 
-        if(!isInChat)  throw new Error('403 Not Allowed')
+        if (!isInChat)  throw new Error('403 Not Allowed')
 
         const messages = await message.findMany({
             where: {
-                chatId: Number(chatId)
+                chatId: Number(chatId),
             },
             include: {
                 user: {
                     include: {
-                        profile: true
+                        profile: true,
+                    },
+                },
+                readUsers: true,
+
+            },
+        })
+
+        return formatChatMessages(messages)
+    }
+
+    async setReadMessages({ data, userId }){
+        const {startMessageId, endMessageId} = data
+        const list = [...Array(endMessageId + 1 - startMessageId).keys()].map(el => el + startMessageId)
+
+        await userReadMessage.createMany({
+            data: list.map(el => ({userId, messageId: el}))
+        })
+
+        return true
+    }
+
+    async createChat({title, image, userIds, userId}){
+        const imageStorage = DI.injectModule('imageStorage')
+        const data = image ? await imageStorage.storeImageAndReturnUrl(image) : DEFAULT_IMAGE_URL
+
+        return await chat.create({
+            data: {
+                title,
+                users: {
+                    connect: userIds.map(el => ({id: el}))
+                },
+                imageUrl: data,
+                roles: {
+                    create: {
+                        role: 'ADMIN',
+                        user: {
+                            connect: {
+                                id: userId
+                            }
+                        }
                     }
                 }
             }
         })
-
-        return messages
     }
 }
 
 module.exports = {
     module: {
         service: new ChatService(),
-        name: 'chatService'
-    }
+        name: 'chatService',
+    },
 }

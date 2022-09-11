@@ -42,6 +42,8 @@ model User {
   token             String?
   chats             Chat[]
   messages          Message[]
+  readMessages      UserReadMessage[]
+  rolesInChat       RoleOnChat[]
 }
 
 model Post {
@@ -179,13 +181,39 @@ model Notification {
   read        Boolean       @default(false)
 }
 
+model UserReadMessage{
+    userId     Int
+    user       User? @relation(fields: [userId], references: [id])
+    messageId  Int
+    message    Message? @relation(fields: [messageId], references: [id])
+
+    @@id([userId, messageId])
+}
+
+enum Role{
+    USER
+    ADMIN
+}
+
+model RoleOnChat{
+    userId  Int
+    user    User?    @relation(fields: [userId], references: [id])
+    chatId  Int
+    chat    Chat?    @relation(fields: [chatId], references: [id])
+    role    Role?    @default(USER)
+
+    @@id([chatId, userId])
+}
+
 model Chat{
   id            Int           @id @default(autoincrement())
   title         String
   users         User[]
-  last_message  String
+  last_message  String?
   messages      Message[]
   updatedAt     DateTime   @updatedAt @default(now())
+  imageUrl      String?
+  roles         RoleOnChat[]
 }
 
 model Message{
@@ -196,5 +224,6 @@ model Message{
   createdAt   DateTime      @default(now()) @db.Timestamp(6)
   chatId      Int
   chat        Chat          @relation(fields: [chatId], references: [id])
-  updatedAt    DateTime     @updatedAt @default(now())
+  updatedAt   DateTime     @updatedAt @default(now())
+  readUsers   UserReadMessage[]
 }

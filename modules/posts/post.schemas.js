@@ -1,49 +1,50 @@
-module.exports = (fastify, opts, done) => {
+'use strict'
+module.exports = (fastify) => {
     fastify.addSchema({
         $id: 'chunk',
         type: 'object',
         properties: {
-            id: {type: 'integer'},
-            image: {type: 'string'},
-            text: {type: 'string'},
-            createdAt: {type: 'string'},
-        }
+            id: { type: 'integer' },
+            image: { type: 'string' },
+            text: { type: 'string' },
+            createdAt: { type: 'string' },
+        },
     })
 
     fastify.addSchema({
         $id: 'post',
         type: 'object',
         properties: {
-            id: {type: 'integer'},
-            title: {type: 'string'},
+            id: { type: 'integer' },
+            title: { type: 'string' },
             chunks: {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'integer'
+                        type: 'integer',
                     },
                     text: {
-                        type: 'string'
-                    }
+                        type: 'string',
+                    },
                 },
-                required: ['id']
+                required: ['id'],
             },
-            createdAt: {type: 'string'},
+            createdAt: { type: 'string' },
             tags: {
                 type: 'array',
                 items: {
-                    type: 'string'
-                }
-            }
-        }
+                    type: 'string',
+                },
+            },
+        },
     })
 
     fastify.addSchema({
         $id: 'posts',
         type: 'array',
         items: {
-            $ref: 'post'
-        }
+            $ref: 'post',
+        },
     })
 
     fastify.addSchema({
@@ -51,25 +52,25 @@ module.exports = (fastify, opts, done) => {
         type: 'object',
         properties: {
             id: {
-                type: 'integer'
+                type: 'integer',
             },
             title: {
-                type: 'string'
+                type: 'string',
             },
             chunks: {
                 type: 'object',
                 properties: {
                     id: {
-                        type: 'integer'
+                        type: 'integer',
                     },
                     text: {
-                        type: 'string'
-                    }
+                        type: 'string',
+                    },
                 },
-                required: ['id']
-            }
+                required: ['id'],
+            },
         },
-        required: ['id', 'title']
+        required: ['id', 'title'],
     })
 
     fastify.addSchema({
@@ -77,20 +78,20 @@ module.exports = (fastify, opts, done) => {
         querystring: {
             type: 'object',
             properties: {
-                take: {type: 'integer'},
-                skip: {type: 'integer'},
-                order: {type: 'string', enum: ['ASC', 'DESC']},
-                sort: {type: 'string'},
+                take: { type: 'integer' },
+                skip: { type: 'integer' },
+                order: { type: 'string', enum: ['ASC', 'DESC'] },
+                sort: { type: 'string' },
                 filter: {
                     type: 'object',
                     properties: {
-                        authorId: {type: 'number'},
-                        header: {type: 'string'},
+                        authorId: { type: 'number' },
+                        header: { type: 'string' },
                     },
-                }
+                },
             },
-            required: ['take, skip, order', 'sort']
-        }
+            required: ['take, skip, order', 'sort'],
+        },
     })
 
     fastify.addSchema({
@@ -98,18 +99,18 @@ module.exports = (fastify, opts, done) => {
         querystring: {
             type: 'object',
             properties: {
-                id: {type: '"integer'}
+                id: { type: '"integer' },
             },
-            required: ['id']
-        }
+            required: ['id'],
+        },
     })
 
     fastify.addSchema({
         $id: 'delPost',
         type: 'object',
         properties: {
-            id: {type: 'number'}
-        }
+            id: { type: 'number' },
+        },
     })
 
 }
