@@ -1,9 +1,7 @@
 const DI = require('../../lib/DI')
-const { createResponse, createError } = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 
 const routes =  (fastify, opts, done) => {
-    // fastify.decorateRequest('ans', 42)
 
     fastify.route({
         method: 'POST',
@@ -29,9 +27,9 @@ const routes =  (fastify, opts, done) => {
                 const { ticket, password } = request.body
                 const token = await userService.loginUser({ ticket, password })
                 if (!token) reply.code(401).send()
-                reply.send(createResponse({ token }))
+                reply.send({body: {token}, success: true})
             } catch (e) {
-                reply.send(e)
+                reply.send({body: e, success: false})
             }
         },
     })
@@ -68,10 +66,14 @@ const routes =  (fastify, opts, done) => {
                     email,
                     group,
                 })
-                reply.send(createResponse({ token }))
+                reply.send({
+                    body: {
+                        token
+                    },
+                    success: true
+                })
             } catch (e) {
-                console.log('e', e)
-                reply.send(createError(e))
+                reply.send({ body: e, success: false })
             }
         },
     })
@@ -104,9 +106,9 @@ const routes =  (fastify, opts, done) => {
                     )
                 const userService = DI.injectModule('authService')
                 const isValid = await userService.verify(userToken)
-                reply.send(createResponse({ verified: !!isValid }))
+                reply.send({ success: true, body: { verified: !!isValid } })
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })

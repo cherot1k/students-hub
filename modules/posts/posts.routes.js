@@ -215,15 +215,17 @@ const routes = (fastify, opts, done) => {
 
                 const chunkPhoto = data ? data.data : ''
 
-                reply.send(createResponse(await postService.updatePost({
+                const updatedPost = await postService.updatePost({
                     id,
                     title,
                     userId,
                     chunks: [{ title: body }],
                     chunkPhoto,
-                })))
+                })
+
+                reply.send({success: true, body: updatedPost})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -252,9 +254,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { id } = request.query
                 await postService.deletePost({ id })
-                reply.send(createResponse({}))
+                reply.send({success: true, body: {}})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -276,9 +278,10 @@ const routes = (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try {
-                reply.send(createResponse(await postService.getTags()))
+                const tags = await postService.getTags()
+                reply.send({success: true, body: tags})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -305,10 +308,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, postId } = request.body
                 await postService.likePost(postId, userId)
-                reply.send(createResponse({}))
+                reply.send({success:true, body: true})
             } catch (e) {
-                console.log(e)
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -335,9 +337,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, postId } = request.body
                 await postService.unlikePost(postId, userId)
-                reply.send(createResponse({}))
+                reply.send({success: true, body: true})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -353,7 +355,7 @@ const routes = (fastify, opts, done) => {
             const { postId } = request.params
             const { userId } = request.body
             const res = await postService.getPostComments(postId, userId)
-            reply.send(createResponse(res))
+            reply.send({success: true, body: res})
         },
     })
 
@@ -380,10 +382,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { postId, text, userId } = request.body
                 await postService.createComment(text, postId, userId)
-                reply.send(createResponse({}))
+                reply.send({success: true, body: true})
             } catch (e) {
-                console.log('error', e)
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -410,10 +411,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, commentId } = request.body
                 await postService.likeComment({ commentId, userId })
-                reply.send(createResponse({}))
+                reply.send({success: true, body: true})
             } catch (e) {
-                console.log('error', e)
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -440,9 +440,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, commentId } = request.body
                 await postService.unlikeComment({ commentId, userId })
-                reply.send(createResponse({}))
+                reply.send({success: true, body: true})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -472,10 +472,9 @@ const routes = (fastify, opts, done) => {
                     await postService.unlikeComment({ userId, commentId })
                 }
 
-                reply.send(createResponse(true))
+                reply.send({success: true, body: true})
             } catch (e) {
-                console.log('e', e)
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
 
         },
@@ -504,7 +503,7 @@ const routes = (fastify, opts, done) => {
                 await postService.unlikePost(postId, userId)
             }
 
-            return reply.send(createResponse(isLiked))
+            return reply.send({ success: true, body: isLiked })
         },
     })
 
@@ -545,10 +544,9 @@ const routes = (fastify, opts, done) => {
                     id,
                 })
 
-                reply.send(createResponse(res))
+                reply.send({success: true, body: res})
             } catch (e) {
-                console.log('e', e)
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })

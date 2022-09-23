@@ -194,7 +194,7 @@ const routes = (fastify, opts, done) => {
                 image: photo
             })
 
-            reply.send(2)
+            reply.send({success: true, body: result})
         }
     })
 

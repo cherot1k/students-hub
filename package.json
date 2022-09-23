@@ -38,8 +38,8 @@
     "eslint": "^8.23.0",
     "eslint-config-metarhia": "^8.1.0",
     "eslint-plugin-import": "^2.26.0",
-    "jest": "^27.0.6",
-    "form-auto-content": "latest"
+    "form-auto-content": "latest",
+    "jest": "^27.0.6"
   },
   "prisma": {
     "seed": "node prisma/seed/seed.js"

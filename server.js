@@ -5,6 +5,7 @@ const {loadModule} = require("./lib/loadmodules")
 const fastify_swagger = require('fastify-swagger')
 const {MODULE_PATH} = require('./utils/constants')
 const DI = require('./lib/DI')
+const { createResponse, createError } = require('./lib/http')
 
 const registerContextRoutes = (server) => {
   return ({routes, prefix}) => {
@@ -18,6 +19,7 @@ const registerContextRoutes = (server) => {
 const createServer = async () => {
       const fastify = require('fastify')({
           logger: true,
+          ignoreTrailingSlash: true,
       })
 
       fastify.register(require('@fastify/websocket'), {
@@ -54,7 +56,14 @@ const createServer = async () => {
 
       fastify.addHook('preHandler', (request, reply, done) => {
         request.log.info({body: JSON.stringify( request.body), query: JSON.stringify(request.query)})
-        done()
+          console.log('id', request.id)
+          done()
+      })
+
+      fastify.addHook('onSend', async(request, reply, payload) => {
+          request.log.info({body: JSON.stringify(payload)})
+
+          return payload?.success? createResponse(payload?.body): createError(payload?.body)
       })
 
       fastify.ready((err) => {

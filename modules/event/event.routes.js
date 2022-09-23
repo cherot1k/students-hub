@@ -55,9 +55,9 @@ const routes = (fastify, opts, done) => {
                         title,
                         address,
                     })
-                reply.send(createResponse({ event }))
+                reply.send({body:{ event }, success: true})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({body:e, success: false})
             }
         },
     })
@@ -126,9 +126,9 @@ const routes = (fastify, opts, done) => {
                     await eventService.getEvents({
                         filterObject: request.data,
                     })
-                reply.send(createResponse(data))
+                reply.send({body: data, success: false})
             } catch (e) {
-                reply.send(e)
+                reply.send({body:e, success: false})
             }
         },
     })
@@ -163,13 +163,10 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId } = request.body
                 const id = request.params.id
-                reply.send(
-                    createResponse(
-                        await eventService.getEvent({ userId, id }),
-                    ),
-                )
+                const event = await eventService.getEvent({ userId, id });
+                reply.send({success: true, body: event})
             } catch (e) {
-                reply.send(createError(e))
+                reply.send({success: false, body: e})
             }
         },
     })
@@ -204,11 +201,9 @@ const routes = (fastify, opts, done) => {
             const data = request.body
             const userId = data.userId
             delete data.userId
-            reply.send(
-                createResponse(
-                    await eventService.updateEvent(data, userId),
-                ),
-            )
+
+            const event = await eventService.updateEvent(data, userId)
+            reply.send({body: event, success: true})
         },
     })
 
@@ -247,7 +242,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             const { id, userId } = request.query
             await eventService.deleteEvent({ id, userId })
-            reply.send(createResponse({}))
+            reply.send({ success: true, body: {} })
         },
     })
 
@@ -277,7 +272,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             const { userId, eventId } = request.body
             await eventService.connectUsersToEvent({ userId, eventId })
-            reply.send(createResponse({}))
+            reply.send({ success: true, body: {} })
         },
     })
 
@@ -307,7 +302,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             const { userId, eventId } = request.body
             await eventService.disconnectUserFromEvent({ userId, eventId })
-            reply.send(createResponse({}))
+            reply.send({ success: true, body: {} })
         },
     })
 
