@@ -10,6 +10,7 @@
     "test": "jest",
     "start": "node index.js",
     "prestart": "prisma db push --accept-data-loss && prisma migrate dev --name init && npx prisma db seed"
+    "prisma": "prisma studio --port 5556"
   },
   "keywords": [],
   "author": "",
