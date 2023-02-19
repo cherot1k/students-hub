@@ -60,10 +60,11 @@ const createServer = async () => {
           done()
       })
 
-      fastify.addHook('onSend', async(request, reply, payload) => {
-          request.log.info({body: JSON.stringify(payload)})
+      fastify.addHook('onSend', (request, reply, payload, done) => {
+        const parsedPayload = JSON.parse(payload)
+        request.log.info({body: payload})
 
-          return payload?.success? createResponse(payload?.body): createError(payload?.body)
+        done( null, parsedPayload?.success? createResponse(parsedPayload?.body): createError(parsedPayload?.body))
       })
 
       fastify.ready((err) => {

@@ -211,6 +211,7 @@ model Chat{
   users         User[]
   last_message  String?
   messages      Message[]
+  createdAt   DateTime      @default(now()) @db.Timestamp(6)
   updatedAt     DateTime   @updatedAt @default(now())
   imageUrl      String?
   roles         RoleOnChat[]
@@ -221,6 +222,7 @@ model Message{
   user        User          @relation(fields: [userId], references: [id])
   userId      Int
   message     String
+  image       String?
   createdAt   DateTime      @default(now()) @db.Timestamp(6)
   chatId      Int
   chat        Chat          @relation(fields: [chatId], references: [id])

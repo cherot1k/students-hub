@@ -309,34 +309,7 @@ class PostsService {
 
     }
 
-    async updatePost({ id, title, userId, chunks, chunkPhoto, tags }) {
-
-        if(tags.length > 0){
-            const relatedTags = await tag.findMany({
-                where: {
-                    value: {
-                        in: tags,
-                    },
-                },
-            })
-
-            const tagIds = relatedTags.map((el) => el.id)
-
-            await postsOnTags.deleteMany({
-                where: {
-                    postId: id
-                }
-            })
-
-            await postsOnTags.createMany({
-                data: tagIds.map(el => ({
-                    tagId: el,
-                    postId: id
-                }))
-            })
-        }
-
-
+    async updatePost({ id, title, userId, chunks, chunkPhoto }) {
         await post.updateMany({
             where: {
                 id,
@@ -377,11 +350,7 @@ class PostsService {
                 create: {
                     image: chunk.image,
                     text: chunk.text,
-                    post: {
-                        connect: {
-                            id: id
-                        }
-                    }
+                    postId: id,
                 },
             })
 
@@ -391,10 +360,11 @@ class PostsService {
         await post.update({
             where: {
                 id,
-            },
-            data: {
-                chunks: {
-                    connect: chunksIds.map((el) => ({ id: el.id })),
+                authorId: userId,
+                data: {
+                    chunks: {
+                        connect: chunksIds.map((el) => ({ id: el.id })),
+                    },
                 },
             },
         })
@@ -553,12 +523,11 @@ class PostsService {
                 id: Number(id),
                 userId,
                 chunks: [{ text: body }],
-                chunkPhoto: imageData,
-                title,
-                tags
+                chunkPhoto: imageData, title,
             })
         } else {
-            return await this.createPost({
+            return await
+            this.createPost({
                 title,
                 body: [{ text: body }],
                 userId,

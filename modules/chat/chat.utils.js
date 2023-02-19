@@ -11,6 +11,7 @@ const formatChatMessage = (message) => {
         message: message.message,
         createdAt: message.createdAt,
         updatedAt: message.updatedAt,
+        image: message?.image
     }
 }
 
@@ -22,10 +23,26 @@ const formatChat = (chat, last_message, userId) => {
     return {
         id: chat.id,
         title: chat.title,
-        last_message,
+        last_message: chat.messages?.[0]?{
+            text: chat.messages[0].message,
+            isMessageRead: chat.messages[0].readUsers.map(el => el.userId).includes(userId),
+            createdAt: chat.messages[0]?.createdAt,
+            updatedAt: chat.messages[0]?.updatedAt,
+            deletedAt: null,
+            user: {
+                ...chat.messages[0].user.profile,
+                firstName: chat.messages[0].user.profile.first_name,
+                lastName: chat.messages[0].user.profile.last_name,
+                id: chat.messages[0].user.id,
+                ticket: chat.messages[0].user.ticket,
+            },
+            id: chat.messages[0].id,
+
+        } : null,
         imageUrl: chat.imageUrl,
         role: chat?.roles.find(el => el.userId === userId)?.role || null,
         members: chat.users,
+        deletedAt: null
     }
 }
 
@@ -35,5 +52,7 @@ module.exports = {
     formatChatMessages,
     formatChat,
     formatChatMessage,
-    formatChats
+    formatChats,
 }
+
+

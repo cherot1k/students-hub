@@ -4,7 +4,19 @@ const { verify } = require('../jwt')
 const { createResponse, createError } = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 
+const preHandler = (request, reply, done) => {
+    const userToken = request.headers.authorization.replace(BEARER_STRING, '')
+    const userId = verify(userToken).id
+    if (!userId) reply.code(401).send(createError('Unauthorized'))
+
+    request.body = { ...request.body, userId }
+
+    done()
+}
+
 const routes = (fastify, opts, done) => {
+
+    fastify.addHook('preHandler', preHandler)
     const eventService = DI.injectModule('eventService')
     fastify.route({
         method: 'POST',
@@ -55,9 +67,9 @@ const routes = (fastify, opts, done) => {
                         title,
                         address,
                     })
-                reply.send({body:{ event }, success: true})
+                reply.send(JSON.stringify({body:{ event }, success: true}))
             } catch (e) {
-                reply.send({body:e, success: false})
+                reply.send(JSON.stringify( {body:e, success: false}))
             }
         },
     })
@@ -126,9 +138,9 @@ const routes = (fastify, opts, done) => {
                     await eventService.getEvents({
                         filterObject: request.data,
                     })
-                reply.send({body: data, success: false})
+                reply.send(JSON.stringify({body: data, success: false}))
             } catch (e) {
-                reply.send({body:e, success: false})
+                reply.send(JSON.stringify({body:e, success: false}))
             }
         },
     })
@@ -203,7 +215,7 @@ const routes = (fastify, opts, done) => {
             delete data.userId
 
             const event = await eventService.updateEvent(data, userId)
-            reply.send({body: event, success: true})
+            reply.send(JSON.stringify({body: event, success: true}))
         },
     })
 
@@ -242,7 +254,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             const { id, userId } = request.query
             await eventService.deleteEvent({ id, userId })
-            reply.send({ success: true, body: {} })
+            reply.send(JSON.stringify({ success: true, body: {} }))
         },
     })
 
@@ -272,7 +284,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             const { userId, eventId } = request.body
             await eventService.connectUsersToEvent({ userId, eventId })
-            reply.send({ success: true, body: {} })
+            reply.send(JSON.stringify({ success: true, body: {} }))
         },
     })
 
@@ -302,7 +314,7 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             const { userId, eventId } = request.body
             await eventService.disconnectUserFromEvent({ userId, eventId })
-            reply.send({ success: true, body: {} })
+            reply.send(JSON.stringify({ success: true, body: {} }))
         },
     })
 

@@ -1,4 +1,5 @@
 const DI = require('../../lib/DI')
+
 const BEARER_STRING = 'Bearer '
 
 const routes =  (fastify, opts, done) => {
@@ -27,9 +28,9 @@ const routes =  (fastify, opts, done) => {
                 const { ticket, password } = request.body
                 const token = await userService.loginUser({ ticket, password })
                 if (!token) reply.code(401).send()
-                reply.send({body: {token}, success: true})
+                reply.send(JSON.stringify( {body: {token}, success: true}))
             } catch (e) {
-                reply.send({body: e, success: false})
+                reply.send(JSON.stringify({body: e, success: false}))
             }
         },
     })
@@ -54,9 +55,9 @@ const routes =  (fastify, opts, done) => {
         }, handler: async (request, reply) => {
             try {
 
-                const { password, group, email, file } = request.body
+                const { password, group, email, ticketImage } = request.body
 
-                const data = file[0]
+                const data = ticketImage[0]
 
                 const ticketPhoto = await data.data
                 const userService = DI.injectModule('authService')
@@ -66,14 +67,14 @@ const routes =  (fastify, opts, done) => {
                     email,
                     group,
                 })
-                reply.send({
+                reply.send(JSON.stringify({
                     body: {
                         token
                     },
                     success: true
-                })
+                }))
             } catch (e) {
-                reply.send({ body: e, success: false })
+                reply.send(JSON.stringify({ body: e, success: false }))
             }
         },
     })
@@ -106,9 +107,9 @@ const routes =  (fastify, opts, done) => {
                     )
                 const userService = DI.injectModule('authService')
                 const isValid = await userService.verify(userToken)
-                reply.send({ success: true, body: { verified: !!isValid } })
+                reply.send(JSON.stringify({ success: true, body: { verified: !!isValid } }))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify({success: false, body: e}))
             }
         },
     })

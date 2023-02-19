@@ -22,14 +22,23 @@ class ImageStorageService {
                     if (res) {
                         resolve(res.url)
                     } else {
+                        reject()
                         console.log(err)
                     }
                 },
             )
 
-            imgDataStream.pipe(stream).on('end', () => {
-            })
+            imgDataStream.pipe(stream).on('end', () => {})
         })
+    }
+
+    async uploadBase64(base64String){
+        const res = await clodinary.uploader.upload(base64String, {
+            overwrite: true,
+            invalidate: true,
+            width: 810, height: 456, crop: "fill"
+        })
+        return res.url
     }
 
     async getImageByUrl() {

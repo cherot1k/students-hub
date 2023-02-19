@@ -1,4 +1,4 @@
-const { createWorker } = require('tesseract.js')
+const Tesseract = require('tesseract.js')
 const sharp = require('sharp')
 
 const LANGUAGES = {
@@ -87,27 +87,28 @@ const parseImageData = (imageData) => {
 class ImageRecognitionService {
 
     async recognizeTicketData(imageData) {
-        const worker = createWorker()
-        await worker.load()
-        await worker.loadLanguage('eng')
-        await worker.loadLanguage('ukr')
-        const values = []
-        for (const value of BLOCKS) {
-            await worker.initialize(value.language)
-            const { data: { text } } =
-                await worker.recognize(
+        try{
+            const values = []
+            for (const value of BLOCKS) {
+                const { data: { text } } =
+                  await Tesseract.recognize(
                     imageData,
-                    { rectangle: value.rectangle },
-                )
-            values.push({ [value.name]: text.replaceAll('\n', ' ') })
-        }
-        const userImage =
-            await sharp(imageData)
+                    'ukr'
+                    // { rectangle: value.rectangle },
+                  )
+                values.push({ [value.name]: text.replaceAll('\n', ' ') })
+            }
+            const userImage =
+              await sharp(imageData)
                 .extract({ width: 377, height: 467, top: 194, left: 389 })
                 .toBuffer()
-        values.push({ userImage })
-        await worker.terminate()
-        return parseImageData(values)
+            values.push({ userImage })
+            return parseImageData(values)
+        }catch (e) {
+            console.log('errorssss', e)
+            throw e
+        }
+
     }
 }
 

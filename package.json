@@ -7,10 +7,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
-    "start": "node index.js",
-    "prestart": "prisma db push --accept-data-loss && prisma migrate dev --name init && npx prisma db seed"
-    "prisma": "prisma studio --port 5556"
+    "test": "node --test",
+    "start": "nodemon",
+    "prestart": "prisma db push && prisma migrate dev",
+    "seed": "npx prisma db seed",
+    "prisma": "npx prisma studio --port 5556",
+    "p": "npm run prisma"
   },
   "keywords": [],
   "author": "",
@@ -27,11 +29,12 @@
     "firebase-admin": "^11.0.1",
     "jsonwebtoken": "^8.5.1",
     "lodash.clonedeep": "^4.5.0",
+    "lru-cache": "^7.14.0",
     "pg": "^8.7.1",
     "pg-hstore": "^2.3.4",
     "prisma": "^3.2.1",
     "sharp": "^0.29.3",
-    "tesseract.js": "^2.1.5",
+    "tesseract.js": "2.1.2",
     "undici": "^5.4.0",
     "uuid": "^8.3.2"
   },
@@ -40,7 +43,8 @@
     "eslint-config-metarhia": "^8.1.0",
     "eslint-plugin-import": "^2.26.0",
     "form-auto-content": "latest",
-    "jest": "^27.0.6"
+    "jest": "^27.0.6",
+    "nodemon": "^2.0.20"
   },
   "prisma": {
     "seed": "node prisma/seed/seed.js"

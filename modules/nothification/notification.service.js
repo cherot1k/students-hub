@@ -71,6 +71,10 @@ class NotificationService {
     // setReadNotification({ userId, notificationIds }) {
     //
     // }
+
+    async getUserNotification(){
+
+    }
 }
 
 module.exports = {

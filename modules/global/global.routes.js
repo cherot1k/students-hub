@@ -24,9 +24,10 @@ const routes = (fastify, opts, done) => {
         },
         handler: async (request, reply) => {
             try {
-                reply.send(createResponse(await globalService.getInitAppData()))
+                const data = await globalService.getInitAppData()
+                reply.send(JSON.stringify({success: true, body: data}))
             } catch (e) {
-                reply.send(createError('Can\'t get data'))
+                reply.send(JSON.stringify({success: false, body: new Error('Can\'t get data')}))
             }
         },
     })

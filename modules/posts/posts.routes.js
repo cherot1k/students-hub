@@ -1,7 +1,7 @@
 'use strict'
 const DI = require('../../lib/DI')
 const { verify } = require('../jwt')
-const { createResponse, createError } = require('../../lib/http')
+const { createError } = require('../../lib/http')
 const BEARER_STRING = 'Bearer '
 
 const SOCIAL_TAG = {
@@ -79,10 +79,9 @@ const routes = (fastify, opts, done) => {
 
             try {
                 const answer = await postService.getPosts(data)
-                reply.send(createResponse(answer))
+                reply.send(JSON.stringify({success: true, body: answer}))
             } catch (e) {
-                console.log(e)
-                reply.send(createError(e))
+                reply.send(JSON.stringify({success: false, body: e}))
             }
         },
     })
@@ -110,9 +109,9 @@ const routes = (fastify, opts, done) => {
                             id: Number(postId),
                             userId: Number(userId),
                         })
-                reply.send(createResponse(post))
+                reply.send(JSON.stringify({success: true, body: post}))
             } catch (e) {
-                reply.send(createError(e))
+                reply.send(JSON.stringify({success: false, body: e}))
             }
         },
     })
@@ -136,15 +135,12 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             try {
                 const { userId } = request.body
-                reply.send(
-                    createResponse(
-                        await postService.getMyPosts({
-                            userId: Number(userId),
-                        }),
-                    ),
-                )
+                const post = await postService.getMyPosts({
+                      userId: Number(userId),
+                  })
+                reply.send(JSON.stringify({success: true, body: post}))
             } catch (e) {
-                reply.send(createError(e))
+                reply.send(JSON.stringify({success: false, body: e}))
             }
         },
     })
@@ -180,10 +176,9 @@ const routes = (fastify, opts, done) => {
                     tags: JSON.parse(tags),
                     bufferImage: chunkPhoto,
                 })
-                reply.send(createResponse({ createdPost }))
+                reply.send(JSON.stringify({success: true, body: createdPost}))
             } catch (e) {
-                console.log('e', e)
-                reply.send(createError(e))
+                reply.send(JSON.stringify({success: false, body: e}))
             }
         },
     })
@@ -208,18 +203,17 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId } = request.body
 
-
                 const { body, title, id, file } = request.body
 
-                const data = file?.[0]
+                const data = file[0]
 
-                const chunkPhoto = data ? data?.data : ''
+                const chunkPhoto = data ? data.data : ''
 
                 const updatedPost = await postService.updatePost({
                     id,
                     title,
                     userId,
-                    chunks: [{ text: body || '' }],
+                    chunks: [{ title: body }],
                     chunkPhoto,
                 })
 
@@ -254,9 +248,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { id } = request.query
                 await postService.deletePost({ id })
-                reply.send({success: true, body: {}})
+                reply.send(JSON.stringify( {success: true, body: {}}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -279,9 +273,9 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             try {
                 const tags = await postService.getTags()
-                reply.send({success: true, body: tags})
+                reply.send(JSON.stringify( {success: true, body: tags}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -308,9 +302,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, postId } = request.body
                 await postService.likePost(postId, userId)
-                reply.send({success:true, body: true})
+                reply.send(JSON.stringify( {success:true, body: true}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -339,7 +333,7 @@ const routes = (fastify, opts, done) => {
                 await postService.unlikePost(postId, userId)
                 reply.send({success: true, body: true})
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -355,7 +349,7 @@ const routes = (fastify, opts, done) => {
             const { postId } = request.params
             const { userId } = request.body
             const res = await postService.getPostComments(postId, userId)
-            reply.send({success: true, body: res})
+            reply.send(JSON.stringify( {success: true, body: res}))
         },
     })
 
@@ -382,9 +376,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { postId, text, userId } = request.body
                 await postService.createComment(text, postId, userId)
-                reply.send({success: true, body: true})
+                reply.send(JSON.stringify( {success: true, body: true}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -411,9 +405,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, commentId } = request.body
                 await postService.likeComment({ commentId, userId })
-                reply.send({success: true, body: true})
+                reply.send(JSON.stringify( {success: true, body: true}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -440,9 +434,9 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, commentId } = request.body
                 await postService.unlikeComment({ commentId, userId })
-                reply.send({success: true, body: true})
+                reply.send(JSON.stringify( {success: true, body: true}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
@@ -472,9 +466,9 @@ const routes = (fastify, opts, done) => {
                     await postService.unlikeComment({ userId, commentId })
                 }
 
-                reply.send({success: true, body: true})
+                reply.send(JSON.stringify( {success: true, body: true}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
 
         },
@@ -503,7 +497,7 @@ const routes = (fastify, opts, done) => {
                 await postService.unlikePost(postId, userId)
             }
 
-            return reply.send({ success: true, body: isLiked })
+            return reply.send(JSON.stringify( { success: true, body: isLiked }))
         },
     })
 
@@ -517,7 +511,7 @@ const routes = (fastify, opts, done) => {
                 200: {},
             },
         },
-        // preHandler,
+        preHandler,
         handler: async (request, reply) => {
             try {
                 const userToken =
@@ -544,9 +538,9 @@ const routes = (fastify, opts, done) => {
                     id,
                 })
 
-                reply.send({success: true, body: res})
+                reply.send(JSON.stringify( {success: true, body: res}))
             } catch (e) {
-                reply.send({success: false, body: e})
+                reply.send(JSON.stringify( {success: false, body: e}))
             }
         },
     })
