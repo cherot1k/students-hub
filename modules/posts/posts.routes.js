@@ -215,6 +215,7 @@ const routes = (fastify, opts, done) => {
                     userId,
                     chunks: [{ title: body }],
                     chunkPhoto,
+                    tags
                 })
 
                 reply.send({success: true, body: updatedPost})

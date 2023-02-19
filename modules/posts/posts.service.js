@@ -309,7 +309,32 @@ class PostsService {
 
     }
 
-    async updatePost({ id, title, userId, chunks, chunkPhoto }) {
+    async updatePost({ id, title, userId, chunks, chunkPhoto, tags }) {
+        if(tags?.length > 0){
+            const relatedTags = await tag.findMany({
+                where: {
+                    value: {
+                        in: tags,
+                    },
+                },
+            })
+
+            const tagIds = relatedTags.map((el) => el.id)
+
+            await postsOnTags.deleteMany({
+                where: {
+                    postId: id
+                }
+            })
+
+            await postsOnTags.createMany({
+                data: tagIds.map(el => ({
+                    tagId: el,
+                    postId: id
+                }))
+            })
+        }
+
         await post.updateMany({
             where: {
                 id,
@@ -360,11 +385,10 @@ class PostsService {
         await post.update({
             where: {
                 id,
-                authorId: userId,
-                data: {
-                    chunks: {
-                        connect: chunksIds.map((el) => ({ id: el.id })),
-                    },
+            },
+            data: {
+                chunks: {
+                    connect: chunksIds.map((el) => ({ id: el.id })),
                 },
             },
         })
