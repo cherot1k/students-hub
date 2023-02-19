@@ -211,15 +211,15 @@ const routes = (fastify, opts, done) => {
 
                 const { body, title, id, file } = request.body
 
-                const data = file[0]
+                const data = file?.[0]
 
-                const chunkPhoto = data ? data.data : ''
+                const chunkPhoto = data ? data?.data : ''
 
                 reply.send(createResponse(await postService.updatePost({
                     id,
                     title,
                     userId,
-                    chunks: [{ title: body }],
+                    chunks: [{ text: body || '' }],
                     chunkPhoto,
                 })))
             } catch (e) {
