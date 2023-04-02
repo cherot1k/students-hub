@@ -273,7 +273,7 @@ class ChatService {
             data: {
                 title,
                 users: {
-                    connect: userIds.map(el => ({id: el}))
+                    connect: userIds.concat([userId]).map(el => ({id: el}))
                 },
                 imageUrl: data,
                 roles: {
