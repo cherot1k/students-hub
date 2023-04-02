@@ -4,7 +4,7 @@ const DI = require('../../lib/DI')
 const utils = require('./post.utils')
 const { DbError } = require('../auth/auth.errors')
 
-const DEFAULT_IMAGE_URL = 'http://res.cloudinary.com/dts7nyiog/image/upload/v1655124121/users/yylbf1ljyehqigwqaatz.jpg'
+const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/dts7nyiog/image/upload/v1680441096/post-default_vc9674.jpg'
 
 const SOCIAL_TAG = {
     me: 'Mine',

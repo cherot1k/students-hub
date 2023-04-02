@@ -6,7 +6,7 @@ const { formatChat, formatChats, formatChatMessages } = require('./chat.utils')
 const prisma = new PrismaClient()
 const { user, chat, message, userReadMessage } = prisma
 
-const DEFAULT_IMAGE_URL = 'http://res.cloudinary.com/dts7nyiog/image/upload/v1655124121/users/yylbf1ljyehqigwqaatz.jpg'
+const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/dts7nyiog/image/upload/v1680441254/chat-default_uf76x6.jpg'
 const DEFAULT_MESSAGE_DEBOUNCE = 10000
 
 const sendReletedChatUsers = (message, userIds, connections) => {
