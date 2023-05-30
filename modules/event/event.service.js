@@ -13,15 +13,15 @@ class EventService {
 
     async getEvent({ id, userId }) {
         try {
-            const data = await event.findMany({
+            const data = await event.findUnique({
                 where: {
                     id: Number(id),
-                    organizer: {
-                        id: Number(userId),
-                    },
+                    // organizer: {
+                    //     id: Number(userId),
+                    // },
                 },
             })
-            return data?.[0]
+            return data
         } catch (e) {
             console.log('error', e)
         }
@@ -80,21 +80,28 @@ class EventService {
                 organizerId: userId,
             },
             data: validObject,
-            select: {
-                members: true,
-                id: true,
-            },
         })
 
-        const userIds = updatedEvent.members.map((el) => el.id)
+        const events = await event.findMany({
+            where: {
+                id: data.id,
+            },
+            include: {
+                members: true
+            }
+        })
 
-        return await notificationService
+        const userIds = events?.members?.map((el) => el.id) || []
+
+        await notificationService
             .sendPushNotifications({
                 userIds,
                 message:
                     `Event ${updatedEvent.id} has been updated,` +
                     'please check out new information',
             })
+
+        return events
     }
 
     async deleteEvent({ id, userId }) {

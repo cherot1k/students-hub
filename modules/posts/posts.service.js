@@ -57,7 +57,9 @@ class PostsService {
 
         if (socialTag === SOCIAL_TAG.university) {
             const userData = await user.findUnique({
-                id: userId,
+                where: {
+                    id: userId,
+                },
                 include: {
                     profile: {
                         include: {
@@ -117,7 +119,7 @@ class PostsService {
             // POST_TAGS_FILTER
         ]
 
-        if (filter.tags.length) FILTER_OBJECT.push(POST_TAGS_FILTER)
+        if (filter?.tags?.length) FILTER_OBJECT.push(POST_TAGS_FILTER)
 
         try {
             const data = await post.findMany({
@@ -260,9 +262,17 @@ class PostsService {
         }
     }
 
-    async createPost({ title, body, userId, tags, bufferImage }) {
+    async createPost({ title, body, userId, tags, bufferImage, attachments }) {
 
         const imageStorage = DI.injectModule('imageStorage')
+        const fileStorage = DI.injectModule('fileStorage')
+
+        let attachmentUrls = []
+
+        if(attachments){
+           attachmentUrls = await Promise.all(attachments.map(async(el) => await fileStorage.storeFileAndReturnUrl(el)))
+        }
+
         const data = bufferImage ? await imageStorage.storeImageAndReturnUrl(bufferImage) : DEFAULT_IMAGE_URL
 
         body = body.map((el) => ({ ...el, image: data }))
@@ -298,9 +308,13 @@ class PostsService {
                             },
                         })),
                     },
+                    attachments: {
+                        create: attachmentUrls.map(el => ({url: el}))
+                    }
                 },
                 include: {
                     chunks: true,
+                    attachments: true
                 },
             })
         } catch (e) {
@@ -541,22 +555,23 @@ class PostsService {
 
     }
 
-    async createOrUpdatePost({ title, body, userId, tags, imageData, id }) {
+    async createOrUpdatePost({ title, body, userId, tags, imageData, id, attachments }) {
         if (id) {
             return await this.updatePost({
                 id: Number(id),
                 userId,
                 chunks: [{ text: body }],
                 chunkPhoto: imageData, title,
+                attachments
             })
         } else {
-            return await
-            this.createPost({
+            return await this.createPost({
                 title,
                 body: [{ text: body }],
                 userId,
                 tags,
                 bufferImage: imageData,
+                attachments
             })
         }
     }

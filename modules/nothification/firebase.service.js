@@ -21,6 +21,7 @@ class FirebaseService {
     }
 
     async sendMessages(messages) {
+        if(messages.length === 0) return
         const result = await admin.messaging().sendAll(messages)
         return result
     }

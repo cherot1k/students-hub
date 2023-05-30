@@ -10,6 +10,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum UserRole{
+    STUDENT
+    TEACHER
+}
+
 model Profile {
   id         Int      @id @default(autoincrement())
   group      Group    @relation(fields: [groupId], references: [id])
@@ -21,7 +26,6 @@ model Profile {
   imageUrl   String
   user       User?
   updatedAt         DateTime        @updatedAt @default(now())
-
 }
 
 model User {
@@ -44,21 +48,29 @@ model User {
   messages          Message[]
   readMessages      UserReadMessage[]
   rolesInChat       RoleOnChat[]
+  role              UserRole        @default(STUDENT)
 }
 
 model Post {
-  id        Int             @id @default(autoincrement())
-  authorId  Int
-  title     String
-  chunks    PostChunk[]
-  createdAt DateTime        @default(now()) @db.Timestamp(6)
-  user      User            @relation(fields: [authorId], references: [id])
-  tags      PostsOnTags[]
-  likes     LikeOnPosts[]
-  comments  Comment[]
-  deleted   DateTime?
-  updatedAt DateTime        @updatedAt @default(now())
+  id            Int             @id @default(autoincrement())
+  authorId      Int
+  title         String
+  chunks        PostChunk[]
+  createdAt     DateTime        @default(now()) @db.Timestamp(6)
+  user          User            @relation(fields: [authorId], references: [id])
+  tags          PostsOnTags[]
+  likes         LikeOnPosts[]
+  comments      Comment[]
+  deleted       DateTime?
+  updatedAt     DateTime        @updatedAt @default(now())
+  attachments   Attachment[]
+}
 
+model Attachment{
+    id      Int     @id @default(autoincrement())
+    postId  Int
+    post    Post    @relation(fields: [postId], references: [id])
+    url     String
 }
 
 model LikeOnComments{

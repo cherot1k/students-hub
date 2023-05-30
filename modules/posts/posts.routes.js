@@ -332,7 +332,7 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId, postId } = request.body
                 await postService.unlikePost(postId, userId)
-                reply.send({success: true, body: true})
+                reply.send(JSON.stringify({success: true, body: true}))
             } catch (e) {
                 reply.send(JSON.stringify( {success: false, body: e}))
             }
@@ -521,7 +521,7 @@ const routes = (fastify, opts, done) => {
                         '',
                     )
                 const userId = verify(userToken).id
-                // const data = await request.file()
+                const attachments = (await request?.body?.attachments || []).map((el) => el.data)
 
                 const buffer = await request.body?.file?.[0]?.data || ''
                 const chunkPhoto = buffer?.length > 0 ? buffer : null
@@ -537,6 +537,7 @@ const routes = (fastify, opts, done) => {
                     tags: JSON.parse(tags),
                     imageData: chunkPhoto,
                     id,
+                    attachments
                 })
 
                 reply.send(JSON.stringify( {success: true, body: res}))

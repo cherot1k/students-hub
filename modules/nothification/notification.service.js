@@ -65,7 +65,9 @@ class NotificationService {
                 .map((el) => el.token)
                 .map((token) => ({ token, notification: { title: message } }))
 
-        await firebaseService.sendMessages(messages)
+        if(messages.length > 0) {
+            await firebaseService.sendMessages(messages)
+        }
     }
 
     // setReadNotification({ userId, notificationIds }) {

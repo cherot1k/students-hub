@@ -112,7 +112,7 @@ const routes = (fastify, opts, done) => {
             const queryBuilder = DI.injectModule('query-builder')
             const includeObject = {
                 where: {
-                    organizerId: userId,
+                    // organizerId: userId,
                 },
                 include: {
                     members: true,
@@ -127,7 +127,7 @@ const routes = (fastify, opts, done) => {
                         skip: Number(skip),
                         take: Number(take),
                         includeObject,
-                        AND: filter ? JSON.parse(filter) : {},
+                        AND: filter ? JSON.parse(filter) : [{}],
                     })
             request.data = query
             done()
@@ -138,7 +138,7 @@ const routes = (fastify, opts, done) => {
                     await eventService.getEvents({
                         filterObject: request.data,
                     })
-                reply.send(JSON.stringify({body: data, success: false}))
+                reply.send(JSON.stringify({body: data, success: true}))
             } catch (e) {
                 reply.send(JSON.stringify({body:e, success: false}))
             }
@@ -175,7 +175,7 @@ const routes = (fastify, opts, done) => {
             try {
                 const { userId } = request.body
                 const id = request.params.id
-                const event = await eventService.getEvent({ userId, id });
+                const event = await eventService.getEvent({ userId, id: Number(id) });
                 reply.send({success: true, body: event})
             } catch (e) {
                 reply.send({success: false, body: e})
