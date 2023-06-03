@@ -3,6 +3,7 @@ const jwt = require('../jwt')
 const { hash, compare } = require('../crypto')
 const DI = require('../../lib/DI')
 const { PrismaClient } = require('@prisma/client')
+const { AuthorizationError } = require('./auth.errors')
 
 const { user } = new PrismaClient()
 
@@ -66,8 +67,8 @@ class AuthService {
     }
     async loginUser({ ticket, password })  {
         const foundUser = await user.findUnique({ where: { ticket } })
-        if (!foundUser) throw new Error('no user')
-        if (!await compare(password,  foundUser.password)) throw new Error('passwords are not equal')
+        if (!foundUser) throw new AuthorizationError('No user found')
+        if (!await compare(password,  foundUser.password)) throw new AuthorizationError('Ticket or password are wrong')
         return createJWTToken({ id: foundUser.id, ticket: foundUser.ticket })
     }
 

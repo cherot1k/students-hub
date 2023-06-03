@@ -56,7 +56,6 @@ const createServer = async () => {
 
       fastify.addHook('preHandler', (request, reply, done) => {
         request.log.info({body: JSON.stringify( request.body), query: JSON.stringify(request.query)})
-          console.log('id', request.id)
           done()
       })
 
@@ -66,6 +65,10 @@ const createServer = async () => {
 
         done( null, parsedPayload?.success? createResponse(parsedPayload?.body): createError(parsedPayload?.body))
       })
+
+      fastify.setErrorHandler(function(err, req, reply) {
+          reply.code(err?.code || 500).send(JSON.stringify({success: false, body: err.message}))
+      });
 
       fastify.ready((err) => {
         if(err) throw err

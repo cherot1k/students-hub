@@ -82,6 +82,7 @@ module.exports = {
                 authorId: user?.id,
                 tags: el.tags?.map((el) => el?.tag?.value),
                 isOwnPost: userId === user?.id,
+                attachments: el.attachments
             }
         })
 

@@ -67,10 +67,12 @@ model Post {
 }
 
 model Attachment{
-    id      Int     @id @default(autoincrement())
-    postId  Int
-    post    Post    @relation(fields: [postId], references: [id])
-    url     String
+    id          Int     @id @default(autoincrement())
+    postId      Int
+    post        Post    @relation(fields: [postId], references: [id])
+    url         String
+    filename    String? @default("")
+    extension   String? @default("")
 }
 
 model LikeOnComments{

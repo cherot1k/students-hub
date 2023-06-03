@@ -521,7 +521,7 @@ const routes = (fastify, opts, done) => {
                         '',
                     )
                 const userId = verify(userToken).id
-                const attachments = (await request?.body?.attachments || []).map((el) => el.data)
+                const attachments = (await request?.body?.attachments || [])
 
                 const buffer = await request.body?.file?.[0]?.data || ''
                 const chunkPhoto = buffer?.length > 0 ? buffer : null

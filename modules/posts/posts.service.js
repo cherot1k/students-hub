@@ -154,6 +154,7 @@ class PostsService {
                             profile: true,
                         },
                     },
+                    attachments: true
                 },
             })
 
@@ -176,10 +177,10 @@ class PostsService {
                 include: {
                     user: {
                         include: {
-
                             profile: true,
                         },
                     },
+                    attachments: true
                 },
             })
 
@@ -270,7 +271,14 @@ class PostsService {
         let attachmentUrls = []
 
         if(attachments){
-           attachmentUrls = await Promise.all(attachments.map(async(el) => await fileStorage.storeFileAndReturnUrl(el)))
+           attachmentUrls = await Promise.all(attachments.map(async(el) => {
+               const url = await fileStorage.storeFileAndReturnUrl(el.data)
+               return {
+                   filename: el.filename,
+                   extension: el.mimetype,
+                   url
+               }
+           }))
         }
 
         const data = bufferImage ? await imageStorage.storeImageAndReturnUrl(bufferImage) : DEFAULT_IMAGE_URL
@@ -309,7 +317,7 @@ class PostsService {
                         })),
                     },
                     attachments: {
-                        create: attachmentUrls.map(el => ({url: el}))
+                        create: attachmentUrls
                     }
                 },
                 include: {
@@ -561,7 +569,8 @@ class PostsService {
                 id: Number(id),
                 userId,
                 chunks: [{ text: body }],
-                chunkPhoto: imageData, title,
+                chunkPhoto: imageData,
+                title,
                 attachments
             })
         } else {

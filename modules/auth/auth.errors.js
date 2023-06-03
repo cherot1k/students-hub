@@ -11,6 +11,14 @@ class DbError extends Error {
     }
 }
 
+class AuthorizationError extends Error{
+    constructor(message) {
+        super(message)
+        this.code = 401
+    }
+}
+
 module.exports = {
     DbError,
+    AuthorizationError
 }
