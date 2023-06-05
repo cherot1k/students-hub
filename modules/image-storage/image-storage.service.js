@@ -6,6 +6,7 @@ clodinary.config({
     api_secret: process.env.API_SECRET,
 })
 const { Readable } = require('node:stream')
+const {FileSaveError} = require('./image-storage.errors')
 require('dotenv').config()
 
 class ImageStorageService {
@@ -19,6 +20,7 @@ class ImageStorageService {
                     folder: 'users',
                 },
                 (err, res) => {
+                    if(err) reject(new FileSaveError(err.toString()))
                     if (res) {
                         resolve(res.url)
                     } else {

@@ -13,19 +13,24 @@ generator client {
 enum UserRole{
     STUDENT
     TEACHER
+    ADMIN
 }
 
 model Profile {
-  id         Int      @id @default(autoincrement())
-  group      Group    @relation(fields: [groupId], references: [id])
-  groupId    Int
-  first_name String
-  last_name  String
-  email      String
-  createdAt  DateTime @default(now()) @db.Timestamp(6)
-  imageUrl   String
-  user       User?
-  updatedAt         DateTime        @updatedAt @default(now())
+  id            Int         @id @default(autoincrement())
+  group         Group?      @relation(fields: [groupId], references: [id])
+  groupId       Int?
+  faculty       Faculty?    @relation(fields: [facultyId], references: [id])
+  facultyId     Int?
+  university    University  @relation(fields: [universityId], references: [id])
+  universityId  Int
+  first_name    String
+  last_name     String
+  email         String
+  createdAt     DateTime    @default(now()) @db.Timestamp(6)
+  imageUrl      String
+  user          User?
+  updatedAt     DateTime    @updatedAt @default(now())
 }
 
 model User {
@@ -138,29 +143,23 @@ model Group {
   id        Int       @id @default(autoincrement())
   name      String    @unique
   members   Profile[]
-  faculty   Faculty   @relation(fields: [facultyId], references: [id])
-  facultyId Int
   createdAt DateTime  @default(now()) @db.Timestamp(6)
   updatedAt DateTime  @updatedAt @default(now())
-
 }
 
 model Faculty {
   id           Int        @id @default(autoincrement())
-  groups       Group[]
+  members      Profile[]
   name         String     @unique
   imageUrl     String     @default("https://google.com")
-  university   University @relation(fields: [universityId], references: [id])
-  universityId Int
   createdAt    DateTime   @default(now()) @db.Timestamp(6)
   updatedAt    DateTime   @updatedAt @default(now())
-
 }
 
 model University {
   id        Int       @id @default(autoincrement())
   name      String    @unique
-  faculties Faculty[]
+  members   Profile[]
   imageUrl  String    @default("https://google.com")
   createdAt DateTime  @default(now()) @db.Timestamp(6)
 }

@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const DI = require('../../lib/DI')
 const utils = require('./post.utils')
 const { DbError } = require('../auth/auth.errors')
+const {AuthorizationError, NotAllowedError} = require('./post.errors')
 
 const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/dts7nyiog/image/upload/v1680441096/post-default_vc9674.jpg'
 
@@ -63,34 +64,23 @@ class PostsService {
                 include: {
                     profile: {
                         include: {
-                            group: {
-                                include: {
-                                    faculty: {
-                                        include: {
-                                            university: true,
-                                        },
-                                    },
-                                },
-                            },
+                            university: true,
                         },
                     },
                 },
             })
 
-            const universityName = userData?.profile?.group?.faculty?.university?.name
+            const universityName = userData?.profile?.university?.name
 
             SOCIAL_TAG_FILTER = {
                 user: {
                     profile: {
-                        group: {
-                            faculty: {
-                                university: {
-                                    name: universityName,
-                                },
-                            },
+                        university: {
+                            name: universityName,
                         },
+                        group: null,
                     },
-                },
+                }
             }
         }
 
@@ -116,7 +106,6 @@ class PostsService {
 
         const FILTER_OBJECT = [
             SOCIAL_TAG_FILTER,
-            // POST_TAGS_FILTER
         ]
 
         if (filter?.tags?.length) FILTER_OBJECT.push(POST_TAGS_FILTER)
@@ -159,15 +148,11 @@ class PostsService {
             })
 
             const answer = utils.formatMultiple(data, userId)
-
-
-            // data = data.map(el => ({...el, tags: el.tags.map(el => el.tag.value)}))
             return answer
         } catch (e) {
             console.log('error', e)
         }
     }
-
     async getPost({ id, userId }) {
         try {
             const data = await post.findMany({
@@ -244,7 +229,6 @@ class PostsService {
             console.log('error', e)
         }
     }
-
     async getMyPosts({ userId }) {
         try {
             const data = await post.findMany({
@@ -262,7 +246,6 @@ class PostsService {
             console.log('error', e)
         }
     }
-
     async createPost({ title, body, userId, tags, bufferImage, attachments }) {
 
         const imageStorage = DI.injectModule('imageStorage')
@@ -330,7 +313,6 @@ class PostsService {
         }
 
     }
-
     async updatePost({ id, title, userId, chunks, chunkPhoto, tags }) {
         if(tags?.length > 0){
             const relatedTags = await tag.findMany({
@@ -415,13 +397,13 @@ class PostsService {
             },
         })
     }
-
-    async deletePost({ id }) {
+    async deletePost({ id, userId }) {
         try {
             return await prisma.$transaction([
                 post.updateMany({
                     where: {
                         id,
+                        authorId: userId
                     },
                     data: {
                         deleted: new Date(),
@@ -441,7 +423,6 @@ class PostsService {
             throw new Error(e)
         }
     }
-
     async getTags() {
         const data = await tag.findMany()
 
@@ -449,7 +430,6 @@ class PostsService {
             tags: data.map((el) => el.value),
         }
     }
-
     async likePost(postId, userId) {
         return await likeOnPosts.create({
             data: {
@@ -466,7 +446,6 @@ class PostsService {
             },
         })
     }
-
     async unlikePost(postId, userId) {
         return await likeOnPosts.deleteMany({
             where: {
@@ -475,7 +454,6 @@ class PostsService {
             },
         })
     }
-
     async createComment(text, postId, userId) {
         try {
             return await post.update({
@@ -503,7 +481,6 @@ class PostsService {
             throw new DbError('Can\'t create ')
         }
     }
-
     async getPostComments(postId, userId) {
         const comments = await comment.findMany({
             where: {
@@ -521,7 +498,6 @@ class PostsService {
 
         return utils.formatComments(comments, userId)
     }
-
     async likeComment({ commentId, userId }) {
         try {
             return await comment.update({
@@ -547,7 +523,6 @@ class PostsService {
         }
 
     }
-
     async unlikeComment({ userId, commentId }) {
         try {
             return await likeOnComments.deleteMany({
@@ -562,7 +537,6 @@ class PostsService {
         }
 
     }
-
     async createOrUpdatePost({ title, body, userId, tags, imageData, id, attachments }) {
         if (id) {
             return await this.updatePost({
@@ -583,6 +557,124 @@ class PostsService {
                 attachments
             })
         }
+    }
+    async deletePostAsAdmin({ id, userId, role }){
+        if(role !== 'ADMIN') return new AuthorizationError('You are not an admin')
+
+        const userService = DI.injectModule('userService')
+
+        const admin = await userService.getUserById(userId)
+
+        const adminUniversity = admin?.profile?.university?.name;
+
+        const relatedPost = await post.findUnique({
+            where: {
+                id
+            },
+            include: {
+                chunks: true,
+                user: {
+                    profile:{
+                        include: {
+                            university: true
+                        }
+                    }
+                }
+            }
+        })
+
+        const authorUniversity = relatedPost?.user?.profile?.university?.name;
+
+        if(adminUniversity !== authorUniversity) throw new NotAllowedError('You can not delete of students not from your university')
+
+        return await prisma.$transaction([
+            post.update({
+                where: {
+                    id,
+                },
+                data: {
+                    deleted: new Date(),
+                },
+            }),
+            postChunk.updateMany({
+                where: {
+                    postId: id,
+                },
+                data: {
+                    deleted: new Date(),
+                },
+            }),
+        ])
+
+    }
+    async createPostAsAdmin({ title, body, userId, tags, bufferImage, attachments, role }){
+        if(role !== 'ADMIN') return new AuthorizationError('You are not an admin')
+
+        const imageStorage = DI.injectModule('imageStorage')
+        const fileStorage = DI.injectModule('fileStorage')
+
+        let attachmentUrls = []
+
+        if(attachments){
+            attachmentUrls = await Promise.all(attachments.map(async(el) => {
+                const url = await fileStorage.storeFileAndReturnUrl(el.data)
+                return {
+                    filename: el.filename,
+                    extension: el.mimetype,
+                    url
+                }
+            }))
+        }
+
+        const data = bufferImage ? await imageStorage.storeImageAndReturnUrl(bufferImage) : DEFAULT_IMAGE_URL
+
+        body = body.map((el) => ({ ...el, image: data }))
+
+        const relatedTags = await tag.findMany({
+            where: {
+                value: {
+                    in: tags,
+                },
+            },
+        })
+
+        const tagIds = relatedTags.map((el) => el.id)
+
+        try {
+            return await post.create({
+                data: {
+                    title,
+                    user: {
+                        connect: {
+                            id: userId,
+                        },
+                    },
+                    chunks: {
+                        create: [...body],
+                    },
+                    tags: {
+                        create: tagIds.map((el) => ({
+                            tag: {
+                                connect: {
+                                    id: el,
+                                },
+                            },
+                        })),
+                    },
+                    attachments: {
+                        create: attachmentUrls
+                    }
+                },
+                include: {
+                    chunks: true,
+                    attachments: true
+                },
+            })
+        } catch (e) {
+            throw new Error(e)
+        }
+
+
     }
 }
 

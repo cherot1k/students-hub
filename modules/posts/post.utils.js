@@ -72,7 +72,7 @@ module.exports = {
                 text: chunk?.text,
                 image: chunk?.image,
                 profilePictureUrl: userProfile?.imageUrl,
-                username: `${userProfile.first_name + userProfile.last_name}`,
+                username: `${userProfile.first_name} ${userProfile.last_name}`,
                 likesCount: likes.length,
                 isLiked: !!likes.find((el) => el.userId === user.id),
                 commentsCount: countValues.comments,

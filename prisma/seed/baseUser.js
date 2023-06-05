@@ -57,26 +57,26 @@ module.exports = async () => {
                                 },
                                 create: {
                                     ...DEFAULT_GROUP,
-                                    faculty: {
-                                        connectOrCreate: {
-                                            where: {
-                                                name: DEFAULT_FACULTY.name,
-                                            },
-                                            create: {
-                                                ...DEFAULT_FACULTY,
-                                                university: {
-                                                    connectOrCreate: {
-                                                        where: {
-                                                            name: DEFAULT_UNIVERSITY_DATA.name,
-                                                        },
-                                                        create: {
-                                                            ...DEFAULT_UNIVERSITY_DATA
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
+                                }
+                            }
+                        },
+                        faculty: {
+                            connectOrCreate: {
+                                where: {
+                                    name: DEFAULT_FACULTY.name,
+                                },
+                                create: {
+                                    ...DEFAULT_FACULTY,
+                                }
+                            }
+                        },
+                        university: {
+                            connectOrCreate: {
+                                where: {
+                                    name: DEFAULT_UNIVERSITY_DATA.name,
+                                },
+                                create: {
+                                    ...DEFAULT_UNIVERSITY_DATA
                                 }
                             }
                         }

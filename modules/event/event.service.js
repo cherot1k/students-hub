@@ -27,15 +27,7 @@ class EventService {
         }
     }
 
-    async createEvent({
-        name,
-        date,
-        organizerId,
-        membersId,
-        status,
-        title,
-        address,
-    }) {
+    async createEvent({name, date, organizerId, membersId, status, title, address,}) {
         try {
             return await event.create({
                 data: {
@@ -137,7 +129,7 @@ class EventService {
         })
     }
 
-    async disconnectUserFromEvent({ eventId, userId }) {
+    async disconnectUserFromEvent({ eventId, userId, message }) {
         return await event.update({
             where: { id: eventId },
             data: {
@@ -174,6 +166,10 @@ class EventService {
                 userIds,
                 message: messageData,
             })
+    }
+
+    async connectUserAsCreator({userId, eventId, adminId}){
+        console.log('todo')
     }
 }
 

@@ -34,6 +34,61 @@ const routes =  (fastify, opts, done) => {
 
     fastify.route({
         method: 'POST',
+        url: '/admin/login',
+        schema: {
+            description: 'Login',
+            tags: ['Auth, User'],
+            summary: '',
+            body: {
+                $ref: 'login',
+            },
+            response: {
+                200: {
+                    token: {
+                        type: 'string',
+                    },
+                },
+            },
+        },
+        handler:  async (request, reply) => {
+            const userService = DI.injectModule('authService')
+            const { ticket, password } = request.body
+            const token = await userService.loginAdmin({ ticket, password })
+            if (!token) throw new AuthorizationError('Error while generating token')
+            reply.send(JSON.stringify( {body: {token}, success: true}))
+        },
+    })
+
+    fastify.route({
+        method: 'POST',
+        url: '/admin/create-teacher',
+        schema: {
+            description: 'Login',
+            tags: ['Auth, User'],
+            summary: '',
+            body: {
+                $ref: 'login',
+            },
+            response: {
+                200: {
+                    token: {
+                        type: 'string',
+                    },
+                },
+            },
+        },
+        handler:  async (request, reply) => {
+            const userService = DI.injectModule('authService')
+            const { password, email, profileImage, ticket, universityName, first_name, last_name } = request.body
+            const data = profileImage[0]?.data
+            const token = await userService.createTeacher({ ticket, password, email, universityName, image: data, first_name, last_name })
+            if (!token) throw new AuthorizationError('Error while generating token')
+            reply.send(JSON.stringify( {body: {token}, success: true}))
+        },
+    })
+
+    fastify.route({
+        method: 'POST',
         url: '/registration',
         schema: {
             description: 'Registerate',

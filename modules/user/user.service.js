@@ -9,20 +9,14 @@ class UserService {
         try {
             const data = await user.findUnique({
                 where: {
-                    id,
+                    id: Number(id),
                 },
                 include: {
                     profile: {
                         include: {
-                            group: {
-                                include: {
-                                    faculty: {
-                                        include: {
-                                            university: true,
-                                        },
-                                    },
-                                },
-                            },
+                            group: true,
+                            faculty: true,
+                            university: true,
                         },
                     },
                 },

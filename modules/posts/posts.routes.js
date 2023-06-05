@@ -12,10 +12,11 @@ const SOCIAL_TAG = {
 
 const preHandler = (request, reply, done) => {
     const userToken = request.headers.authorization.replace(BEARER_STRING, '')
-    const userId = verify(userToken).id
+    const user = verify(userToken)
+    const userId = user?.id
     if (!userId) reply.code(401).send(createError('Unauthorized'))
 
-    request.body = { ...request.body, userId }
+    request.body = { ...request.body, ...user, userId }
 
     done()
 }
@@ -248,7 +249,8 @@ const routes = (fastify, opts, done) => {
         handler: async (request, reply) => {
             try {
                 const { id } = request.query
-                await postService.deletePost({ id })
+                const { userId } = request.body
+                await postService.deletePost({ id, userId })
                 reply.send(JSON.stringify( {success: true, body: {}}))
             } catch (e) {
                 reply.send(JSON.stringify( {success: false, body: e}))
@@ -546,6 +548,37 @@ const routes = (fastify, opts, done) => {
             }
         },
     })
+
+
+    fastify.route({
+        method: 'DELETE',
+        url: '/admin/post',
+        schema: {
+            description: 'Delete post',
+            tags: ['Posts'],
+            querystring: {
+                type: 'object',
+                properties: {
+                    id: {
+                        type: 'integer',
+                    },
+                },
+                required: ['id'],
+            },
+            response: {
+                200: {},
+            },
+        },
+        preHandler,
+        handler: async (request, reply) => {
+            const { id } = request.query
+            const { id: userId, role } = request.body
+
+            await postService.deletePostAsAdmin({ id, userId, role })
+            reply.send(JSON.stringify( {success: true, body: true}))
+        },
+    })
+
 
     done()
 }
