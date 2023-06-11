@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client')
 const DI = require('../../lib/DI')
 const utils = require('./post.utils')
 const { DbError } = require('../auth/auth.errors')
-const {AuthorizationError, NotAllowedError} = require('./post.errors')
+const {AuthorizationError, NotAllowedError, ValidationError} = require('./post.errors')
 
 const DEFAULT_IMAGE_URL = 'https://res.cloudinary.com/dts7nyiog/image/upload/v1680441096/post-default_vc9674.jpg'
 
@@ -26,7 +26,11 @@ const {
     user,
 } = prisma
 
+const SWEAR_WORD_REGEX = /(?<=^|[^а-яa-z])(([уyu]|[нзnz3][аa]|(хитро|не)?[вvwb][зz3]?[ыьъi]|[сsc][ьъ']|(и|[рpr][аa4])[зсzs]ъ?|([оo0][тбtb6]|[пp][оo0][дd9])[ьъ']?|(.\B)+?[оаеиeo])?-?([еёe][бb6](?!о[рй])|и[пб][ае][тц]).*?|([нn][иеаaie]|([дпdp]|[вv][еe3][рpr][тt])[оo0]|[рpr][аa][зсzc3]|[з3z]?[аa]|с(ме)?|[оo0]([тt]|дно)?|апч)?-?[хxh][уuy]([яйиеёюuie]|ли(?!ган)).*?|([вvw][зы3z]|(три|два|четыре)жды|(н|[сc][уuy][кk])[аa])?-?[бb6][лl]([яy](?!(х|ш[кн]|мб)[ауеыио]).*?|[еэe][дтdt][ь']?)|([рp][аa][сзc3z]|[знzn][аa]|[соsc]|[вv][ыi]?|[пp]([еe][рpr][еe]|[рrp][оиioеe]|[оo0][дd])|и[зс]ъ?|[аоao][тt])?[пpn][иеёieu][зz3][дd9].*?|([зz3][аa])?[пp][иеieu][дd][аоеaoe]?[рrp](ну.*?|[оаoa][мm]|([аa][сcs])?([иiu]([лl][иiu])?[нщктлtlsn]ь?)?|([оo](ч[еиei])?|[аa][сcs])?[кk]([оo]й)?|[юu][гg])[ауеыauyei]?|[мm][аa][нnh][дd]([ауеыayueiи]([лl]([иi][сзc3щ])?[ауеыauyei])?|[оo][йi]|[аоao][вvwb][оo](ш|sh)[ь']?([e]?[кk][ауеayue])?|юк(ов|[ауи])?)|[мm][уuy][дd6]([яyаиоaiuo0].*?|[еe]?[нhn]([ьюия'uiya]|ей))|мля([тд]ь)?|лять|([нз]а|по)х|м[ао]л[ао]фь([яию]|[её]й))(?=($|[^а-я]))/im
 
+const checkForSwearWord = (message) => {
+    return SWEAR_WORD_REGEX.test(message)
+}
 
 class PostsService {
     async getPosts(data) {
@@ -115,7 +119,7 @@ class PostsService {
                 skip,
                 take,
                 orderBy: {
-                    id: 'desc',
+                    likes: { _count: 'desc'},
                 },
                 where: {
                     AND: [
@@ -250,6 +254,10 @@ class PostsService {
 
         const imageStorage = DI.injectModule('imageStorage')
         const fileStorage = DI.injectModule('fileStorage')
+
+        if(checkForSwearWord(body)){
+            return new ValidationError('No swear words are allowed')
+        }
 
         let attachmentUrls = []
 
@@ -574,9 +582,11 @@ class PostsService {
             include: {
                 chunks: true,
                 user: {
-                    profile:{
-                        include: {
-                            university: true
+                    include:{
+                        profile:{
+                            include: {
+                                university: true
+                            }
                         }
                     }
                 }

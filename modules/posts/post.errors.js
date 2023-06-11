@@ -12,7 +12,15 @@ class NotAllowedError extends Error{
     }
 }
 
+class ValidationError extends Error{
+    constructor(msg) {
+        super(msg)
+        this.code = 400
+    }
+}
+
 module.exports = {
     AuthorizationError,
-    NotAllowedError
+    NotAllowedError,
+    ValidationError
 }

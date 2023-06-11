@@ -55,6 +55,7 @@ const routes = (fastify, opts, done) => {
                     status,
                     title,
                     address,
+                    maxMembers
                 } = request.body
 
                 const event =
@@ -66,6 +67,7 @@ const routes = (fastify, opts, done) => {
                         status,
                         title,
                         address,
+                        maxMembers
                     })
                 reply.send(JSON.stringify({body:{ event }, success: true}))
             } catch (e) {

@@ -195,18 +195,29 @@ class ChatService {
     }
 
     async editMessage({ userId, chatId, chatRooms, connections, data, chatViewers }) {
+        const currentMessage = await message.findUnique({where: {id: data.id}})
+
+        if(currentMessage.userId !== userId || currentMessage.chatId !== chatId) return
+
         const editedMessage = await message.update({
             where: {
-                userId,
-                chatId,
                 id: data.id,
             },
             data: {
                 message: data.message,
+
+            },
+            include: {
+                user: {
+                    include: {
+                        profile: true,
+                    },
+                },
+                readUsers: true
             },
         })
 
-        await getMessagesAndSentToSockets({ chatRooms, chatId, connections, chatViewers })
+        await getMessagesAndSentToSockets({ chatRooms, chatId, connections, chatViewers, data: editedMessage })
     }
 
     async getChatMessages({ chatId, userId }) {

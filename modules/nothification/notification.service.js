@@ -17,32 +17,41 @@ class NotificationService {
         }
     }
 
+    async getAllNotifications(userId){
+        return await notification.findMany({
+            where: {
+                userId
+            }
+        })
+    }
+
     notifyGroup({ type, userIds, message }) {
 
     }
 
-    async sendInternalNotification({ userId, message }) {
-        // SA
-        try {
-            await notification.create({
-                data: {
-                    message,
-                    user: {
-                        connect: {
-                            id: userId,
-                        },
-                    },
-                },
-            })
-
-            await this.sendPushNotifications({ userId: [userId], message })
-        } catch (e) {
-            throw new DbError('Can\'t create push notification')
-        }
+    async sendInternalNotification({ userIds, message }) {
+        const formData = userIds.map(el => ({
+            userId: el,
+            message
+        }))
+        await notification.createMany({
+            data: formData
+        })
     }
 
     async sendPushNotifications({ userIds, message }) {
         const firebaseService = DI.injectModule('firebaseService')
+
+        await notification.createMany({
+            data: userIds.map(el => ({
+                user: {
+                    connect: {
+                        id: el,
+                    },
+                },
+                message
+            }))
+        })
 
         const relatedUser = await user.findMany({
             where: {

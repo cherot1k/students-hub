@@ -27,7 +27,7 @@ class EventService {
         }
     }
 
-    async createEvent({name, date, organizerId, membersId, status, title, address,}) {
+    async createEvent({name, date, organizerId, membersId, status, title, address, maxMembers}) {
         try {
             return await event.create({
                 data: {
@@ -36,6 +36,7 @@ class EventService {
                     status,
                     title,
                     address,
+                    maxMembers: Number(maxMembers),
                     organizer: {
                         connect: {
                             id: organizerId,
@@ -74,7 +75,7 @@ class EventService {
             data: validObject,
         })
 
-        const events = await event.findMany({
+        const events = await event.findUnique({
             where: {
                 id: data.id,
             },
@@ -83,10 +84,23 @@ class EventService {
             }
         })
 
-        const userIds = events?.members?.map((el) => el.id) || []
+        const userIds = events?.members?.map((el) => el.userId) || []
+
+        try{
+            await notificationService
+                .sendPushNotifications({
+                    userIds,
+                    message:
+                        `Event ${updatedEvent?.id} has been updated,` +
+                        'please check out new information',
+                })
+        }catch (e) {
+            console.log(e)
+        }
+
 
         await notificationService
-            .sendPushNotifications({
+            .sendInternalNotification({
                 userIds,
                 message:
                     `Event ${updatedEvent.id} has been updated,` +

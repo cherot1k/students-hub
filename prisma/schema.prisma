@@ -184,6 +184,7 @@ model Event {
   status      String
   title       String
   address     String
+  maxMembers  Int
 }
 
 model Notification {
